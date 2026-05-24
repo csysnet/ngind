@@ -23,7 +23,7 @@ send_msg(int fd, void *buf, size_t buflen);
 void
 send_ok(int cli_fd, void *buf, size_t buflen, const char *fname);
 
-void
+ssize_t
 recv_msg(int fd, void *buf, size_t buflen);
 
 void
