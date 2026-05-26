@@ -1,97 +1,86 @@
 #ifndef PARSER_H
 #define PARSER_H
-
+#include "./structs.h"
+//GET FUL HEA
 //AFTER
-enum State {
-    STATE_BEGIN
+//quakhu+condi=fut
+//> 2: 1state
 
-    STATE_METHOD,
-    STATE_METHOD_SPACE,
-    STATE_URL,
-    STATE_URL_SPACE,
-    STATE_VER,
-    STATE_VER_CR,
-    STATE_VER_CR_LR,
+void cli_init(cli_t *cli)
+{
+    cli->sfd..
+    cli->state = STATE_METHOD;
+    cli->byte_recv = 0;
 
-    STATE_KEY,
-    STATE_KEY_COLON
-    STATE_VALUE,
-    STATE_VALUE_CR,
-    STATE_VALUE_CR_LF,
-    STATE_VALUE_CR_LF_CR,
-    STATE_VALUE_CR_LF_CR_LF,
 
-    STATE_BODY
+}
+
+//
+void handle_method(cli_t *cli);
+void handle_url(cli_t *cli);
+void handle_ver(cli_t *cli);
+void handle_ver_cr(cli_t *cli);
+void handle_key(cli_t *cli);
+void handle_value(cli *cli);
+void handle_value_cr(cli_t *cli);
+void handle_value_cr_lf(cli_t *cli);
+void handle_cr_lf_cr(cli_t *cli);
+
+
+void handle_body(cli_t *cli);
+
+void handle_state(cli_t *cli, );
+
+void
+shit(conn_t conn, )
+{
+    ssize_t n_read;
+    STATE state = STATE_BEGIN;
+    total
+    for (..)
+    {
+        n_read = read(fd, buf, buflen);
+
+    }
+
 }
 
 void
-shit(int fd, void *buf, size_t buflen)
+handle_cli(cli *cli, void *tempbuf, size_t n_read)
 {
-    ssize_t n_read = read(fd, buf, buflen)
-
-
-
-        switch (state)
-        {
-            case STATE_BEGIN:
-                req.line.method.s = buf; state = STATE_METHOD;
-            case STATE_METHOD:
-                if (buf[i] == ' ') state = STATE_METHOD_SPACE;
-                else req.line.method.slen++;
-            case STATE_METHOD_SPACE:
-                req.line.url.s = &buf[i]; state = STATE_URL;
-            case STATE_URL:
-                if (buf[i] == ' ') state = STATE_URL_SPACE;
-                else req.line.url.slen++;
-
-            case STATE_URL_SPACE:
-                state = STATE_VER; req.line.ver.s = &buf[i];
-            case STATE_VER:
-                if (buf[i] == '\r') state = STATE_VER_CR;
-                else req.line.ver.slen++;
-
-
-            case STATE_VER_CR:
-                if (buf[i] == '\n') state = STATE_VER_CR_LR;
-
-            case STATE_VER_CR_LR:
-                state = STATE_KEY; req.header.key.s = &buf[i];
-
-
-            case STATE_KEY:
-                if (buf[i] == ':') state = STATE_KEY_COLON
-                else if (buf[i] == ' ') continue;
-                else req.line.;
-            case STATE_KEY_COLON:
-                if (buf[i] != ' ') state = STATE_VALUE; req.header.value.s = &buf[i];
-            case STATE_VALUE:
-                if (buf[i] == '\r') state = STATE_VALUE_CR;
-                else ...apened;
-
-            case STATE_VALUE_CR:
-                if (buf[i] == '\n') state = STATE_VALUE_CR_LF;
-
-            case STATE_VALUE_CR_LF:
-                if (buf[i] == '\r') state = STATE_VALUE_CR_LF_CR;
-                else {
-                    state = STATE_KEY; LOOOP
-                    new header and its slen
-                }
-            case STATE_VALUE_CR_LF_CR:
-                if (buf[i] == '\n') state = STATE_VALUE_CR_LF_CR_LF;
-
-            case STATE_VALUE_CR_LF_CR_LF:
-                state = STATE_BODY; req.body.payload.s = &buf[i]
-
-            case STATE_BODY:
-                if (i < conlen) req.body.payload.slen++;
-                else STATE_END
-            case STATE_END:
-        }
-
-
-
+ copy temp to cli
+ then update st or call some what
 }
+
+while (1)
+{
+    ssize_t n_read = read(fd, tempbuf, len);
+
+    if (n_read > 0) handle_cli(cli, tempbuf, n_read);
+    else if (n_read == 0) { close(fd); break;}
+    else {
+        if (errno = EAGAIN || errno = EWOULDBLOCK) break;
+        else { close(fd); break; }
+    }
+}
+
+ssize_t
+recv_msg(int fd, void *buf, size_t buflen)
+{
+    ssize_t n_read;
+
+    n_read = read(fd, (char *)buf + total, buflen - total);
+
+    handle_state(cli *cli);
+    if (cli->state == STATE_DONE);
+
+    total += n_read;
+    return total;
+}
+
+void
+append_req()
+
 
 
 #endif

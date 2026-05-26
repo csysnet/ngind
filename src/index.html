@@ -1,81 +1,27 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>Contact Form</title>
-        <style>
-            table {
-                width: 500px;
-                margin: 30px auto;
-                border: 1px solid #aaa;
-                border-collapse: collapse;
-                padding: 15px;
-            }
-            td {
-                padding: 8px;
-            }
-            h2 {
-                margin: 0;
-            }
-            .line {
-                border-bottom: 1px solid #ccc;
-                height: 1px;
-            }
-            input,
-            textarea {
-                width: 100%;
-                padding: 6px;
-                box-sizing: border-box;
-            }
-            textarea {
-                height: 100px;
-            }
-            .btn {
-                background-color: #4fb3c8;
-                color: white;
-                border: none;
-                padding: 10px;
-                width: 100%;
-                cursor: pointer;
-            }
-        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>HTTP Header Test</title>
+
+        <!-- Extra headers indirectly triggered -->
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+        <!-- Browser will request these -->
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="stylesheet" href="/style.css" />
+
+        <script src="/app.js"></script>
     </head>
     <body>
-        <table>
-            <tr>
-                <td><h2>Contact</h2></td>
-            </tr>
-            <tr>
-                <td class="line"></td>
-            </tr>
+        <h1>Hello HTTP</h1>
 
-            <tr>
-                <td>Title</td>
-            </tr>
-            <tr>
-                <td><input type="text" placeholder="your title" /></td>
-            </tr>
+        <img src="/image.png" alt="img" />
 
-            <tr>
-                <td>Email</td>
-            </tr>
-            <tr>
-                <td><input type="email" placeholder="@gmail.com" /></td>
-            </tr>
-
-            <tr>
-                <td>Content</td>
-            </tr>
-            <tr>
-                <td><textarea></textarea></td>
-            </tr>
-
-            <tr>
-                <td>
-                    <button class="btn">Send</button>
-                </td>
-            </tr>
-        </table>
+        <form action="/submit" method="POST">
+            <input type="text" name="username" />
+            <button type="submit">Send</button>
+        </form>
     </body>
 </html>
-```
