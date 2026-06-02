@@ -71,7 +71,7 @@ handle_cli(int cli_fd)
 
     send_ok(cli_fd, buf, sizeof(buf), "./index.html");
 }
-
+//giasu array of byte
 void
 handle_read(int cli_fd, u_char *buf, size_t buflen)
 {
@@ -84,7 +84,7 @@ handle_read(int cli_fd, u_char *buf, size_t buflen)
 
     end = buf + buflen;
 
-
+    req
     total = 0;
     while (last == )
     {
@@ -99,12 +99,27 @@ handle_read(int cli_fd, u_char *buf, size_t buflen)
             {
                 case PARSE_METHOD:
                     if (*p == ' ') {
+                        req->method.p = p - req->method.len;
                         state = PARSE_URL;
                         continue;
                     }
-                    req->
+                    req->method.len++;
                     break;
+                case PARSE_URL:
+                    if (*p == ' ') {
+                        req->url.p = p - req->url.len;
+                        state = PARSE_VER;
+                        continue;
+                    }
+                    req->url.len++;
 
+                case PARSE_VER:
+                    if (*p == '\n') {
+                        req->ver.p = p - req->url.len - 1;
+                        state = PARSE_KEY;
+                        continue;
+                    }
+                    req->ver.len++;
 
             }
         }
