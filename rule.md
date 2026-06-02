@@ -2,3 +2,7 @@
 2. snake, name_obj
 3. infinite loop, for(;;)
 4. declare begin, const must prepro
+
+---
+hash reduce compare str
+continue for special case

@@ -5,6 +5,8 @@
 //AFTER
 //quakhu+condi=fut
 //> 2: 1state
+// it should know it own linear byte that other control
+// which portion you want, you have
 
 void cli_init(cli_t *cli)
 {
@@ -15,19 +17,13 @@ void cli_init(cli_t *cli)
 
 }
 
-//
-void handle_method(cli_t *cli);
-void handle_url(cli_t *cli);
-void handle_ver(cli_t *cli);
-void handle_ver_cr(cli_t *cli);
-void handle_key(cli_t *cli);
-void handle_value(cli *cli);
-void handle_value_cr(cli_t *cli);
-void handle_value_cr_lf(cli_t *cli);
-void handle_cr_lf_cr(cli_t *cli);
+void
+conn_init(conn_t *c)
+{
+    c->fd
+}
 
 
-void handle_body(cli_t *cli);
 
 void handle_state(cli_t *cli, );
 
@@ -42,25 +38,37 @@ shit(conn_t conn, )
         n_read = read(fd, buf, buflen);
 
     }
-
 }
+
+void conn_handle()
+
+
 
 void
-handle_cli(cli *cli, void *tempbuf, size_t n_read)
-{
- copy temp to cli
- then update st or call some what
-}
+http_handle(conn_t con, )
 
-while (1)
-{
-    ssize_t n_read = read(fd, tempbuf, len);
+//when readable, as much as we can
 
-    if (n_read > 0) handle_cli(cli, tempbuf, n_read);
-    else if (n_read == 0) { close(fd); break;}
-    else {
-        if (errno = EAGAIN || errno = EWOULDBLOCK) break;
-        else { close(fd); break; }
+
+
+
+
+
+void
+handle_cli(cli *cli)
+{
+    ssize_t n_read;
+
+    while (1)
+    {
+        n_read = read(cli->sfd, (sfd->buf) + (sfd->w), )
+
+        if (n_read > 0) handle_cli(cli, tempbuf, n_read);
+        else if (n_read == 0) { close(fd); break;}
+        else {
+            if (errno = EAGAIN || errno = EWOULDBLOCK) break;
+            else { close(fd); break; }
+        }
     }
 }
 

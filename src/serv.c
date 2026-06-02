@@ -65,29 +65,48 @@ send_ok(int cli_fd, void *buf, size_t buflen, const char *fname)
 void
 handle_cli(int cli_fd)
 {
+
     char buf[BUFF_SIZE];
+    // handle_read(cli_fd, buf, BUFF_SIZE);
+
+
     send_ok(cli_fd, buf, sizeof(buf), "./index.html");
 }
 
-ssize_t
-recv_msg(int fd, void *buf, size_t buflen)
+// void
+// handle_read(int cli_fd, u_char *buf, size_t buflen)
+// {
+//     ssize_t n_read;
+
+//     start = buf;
+
+//     pos = buf;
+//     last = buf;
+
+//     end = buf + buflen;
+
+
+//     total = 0;
+//     while (..)
+//     {
+//         n_read = read(fd, last, end - last);
+//         start = last;
+//         last += n_read;
+
+
+//         for (; pos != last; pos++)
+//         {
+
+//         }
+//     }
+//     return total;
+// }
+
+void
+handle_state(int cli_fd, u_char *buf, size_t buflen)
 {
-    ssize_t n_read;
-    size_t total;
 
-    total = 0;
-    while (total < buflen)
-    {
-        n_read = read(fd, (char *)buf + total, buflen - total);
-        if (n_read == -1 || n_read == 0)
-            return n_read;
-
-        total += n_read;
-    }
-    return total;
 }
-
-
 
 int main()
 {
