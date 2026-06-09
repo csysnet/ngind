@@ -21,14 +21,32 @@ typedef struct ngd_hnode_s {
     struct ngd_hnode_s *next;
 } ngd_hnode_t;
 
+typedef struct {
+    u_char *pos;
+    u_char *last;
+    off_t *fpos;
+    off_t *flast;
+
+    int fd;
+    u_char *start;
+    u_char *end;
+} ngd_buf_t;
+
+typedef enum {
+    NGD_OK,
+    NGD_AGAIN,
+    NGD_DECLINED
+} NGD_STATUS;
 
 typedef struct {
+    int state;
     //req line
     ngd_str_t method;
-    ngd_str_t url;
+    ngd_str_t uri;
     ngd_str_t ver;
     //hlines
     ngd_hnode_t *headers;
+    size_t count;
     // //body
     // ndg_req_body_t body;
 } ngd_req_t;
@@ -37,6 +55,13 @@ const char *RES_OK = "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/html\r\n"
                 "Content-Length: %d\r\n"
                 "\r\n";
+
+
+typedef struct {
+    ngd_list_t headers;
+    //cached header;
+} ngd_headers_in;
+
 
 void
 ps(void *buf, size_t buflen);
