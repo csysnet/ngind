@@ -7,6 +7,61 @@
 //> 2: 1state
 // it should know it own linear byte that other control
 // which portion you want, you have
+#define
+
+
+typedef struct ngd_event_t {
+    void *pdata;
+    void (*handler)(struct ngd_event_t *ev);
+} ngd_event_t;
+
+typedef struct ngd_conn_t {
+    int fd;
+    void *pdata;
+    ngd_event_t onread;
+    ngd_event_t onwrite;
+    // ngd_pool_t pool;
+
+} ngd_conn_t;
+
+typedef struct {
+
+} ngd_req_t;
+
+void
+ngd_proc_reqline(ngd_event_t *ev)
+{
+    ngd_conn_t *c;
+    ngd_req_t *r;
+    int rs;
+
+    c = (ngd_conn_t *)ev->pdata;
+    r = r->
+
+    rs = ngd_lex_reqline();
+
+    switch (rs) {
+        case NGD_OK:
+            break;
+    }
+}
+
+int
+ngd_lex_reqline(ngd_req_t *r)
+{
+
+}
+
+
+void
+ngd_proc_headline(ngd_event_t *ev)
+{
+    if ()
+}
+
+
+
+
 
 void cli_init(cli_t *cli)
 {
