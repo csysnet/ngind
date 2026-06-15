@@ -1,11 +1,13 @@
 #ifndef SERV_H
 #define SERV_H
 
+#include <sys/types.h>
+
+// #define PORT 8080
 #define PORT 8081
-// #define PORT 8081
 // #define PORT 8082
 #define BACKLOG 10
-#define BUFF_SIZE 4096
+#define BUFF_SIZE 16192
 
 typedef unsigned char u_char;
 
@@ -14,12 +16,11 @@ typedef struct {
     size_t len;
 } ngd_str_t;
 
-typedef struct ngd_hnode_s {
-    ngd_str_t key;
-    ngd_str_t value;
-    //
-    struct ngd_hnode_s *next;
-} ngd_hnode_t;
+typedef struct ngd_event_t {
+    void *pdata;
+    void (*handler)(struct ngd_event_t *ev);
+} ngd_event_t;
+
 
 typedef struct {
     u_char *pos;
@@ -27,6 +28,7 @@ typedef struct {
     off_t *fpos;
     off_t *flast;
 
+    unsigned isfile;
     int fd;
     u_char *start;
     u_char *end;
@@ -35,18 +37,28 @@ typedef struct {
 typedef enum {
     NGD_OK,
     NGD_AGAIN,
+    NGD_ERR,
     NGD_DECLINED
 } NGD_STATUS;
 
 typedef struct {
-    int state;
+    ngd_str_t key;
+    ngd_str_t value;
+} hline;
+
+typedef struct {
     //req line
     ngd_str_t method;
     ngd_str_t uri;
     ngd_str_t ver;
-    //hlines
-    ngd_hnode_t *headers;
-    size_t count;
+
+    hline headers[64];
+    size_t hpos;
+
+    //owned by parser
+    //request line
+    int state;
+
     // //body
     // ndg_req_body_t body;
 } ngd_req_t;
@@ -58,34 +70,32 @@ const char *RES_OK = "HTTP/1.1 200 OK\r\n"
 
 
 typedef struct {
-    ngd_list_t headers;
-    //cached header;
-} ngd_headers_in;
+
+} ngd_event_t;
+
+void ps(void *buf, size_t buflen);
+
+off_t get_flen(int fd);
+
+void send_msg(int fd, void *buf, size_t buflen);
+
+void send_ok(int cli_fd, void *buf, size_t buflen, const char *fname);
+
+ssize_t recv_msg(int fd, void *buf, size_t buflen);
+
+void handle_cli(int cli_fd);
+
+void start();
+
+void handle_read(int cli_fd, ngd_buf_t *buf);
 
 
-void
-ps(void *buf, size_t buflen);
+int ngd_proc_reqline(ngd_event_t);
 
-off_t
-get_flen(int fd);
+int ngd_parse_reqline()
 
-void
-send_msg(int fd, void *buf, size_t buflen);
-
-void
-send_ok(int cli_fd, void *buf, size_t buflen, const char *fname);
-
-ssize_t
-recv_msg(int fd, void *buf, size_t buflen);
-
-void
-handle_cli(int cli_fd);
-
-void
-start();
-
-void
-handle_read(int cli_fd, u_char *buf, size_t buflen);
+int ngd_lex_header(ngd_req_t *r, ngd_buf_t *buf);
+int ngd_lex_body
 
 
 #endif
