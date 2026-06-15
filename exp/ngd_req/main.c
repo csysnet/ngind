@@ -13,7 +13,7 @@ test()
     int n;
 
     n = snprintf((char *)buf, 8192,
-        "GET /HUYNHTRAM HTTP/1.1\r\n"
+        "GET /dat HTTP/1.1\r\n"
         "Host: dat.com\r\n"
         "Content-length: 800\r\n"
         // "Connection: keep-alive\r\n"
