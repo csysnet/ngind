@@ -6,7 +6,9 @@
 #define NGD_OK 0
 #define NGD_AGAIN -1
 
+typedef struct {
 
+} ngd_listening_t
 
 typedef struct {
     u_char *pos;
@@ -21,7 +23,7 @@ typedef struct {
 } ngd_buf_t;
 
 typedef struct {
-    u_char  *p;
+    u_char  *pdata;
     size_t len;
 } ngd_str_t;
 

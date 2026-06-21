@@ -1,111 +1,51 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
+#include "main.h"
 
-#define PORT 8080
-#define MAX_EVENTS 64
+int create_lc() {
+    struct sockaddr_in addr;
+    int listen_fd;
 
-static void
-set_nonblocking(int fd)
-{
-    int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(PORT);
+
+    memset(&addr, 0, sizeof(struct sockaddr_in));
+
+    bind(listen_fd, (struct sockaddr *)&addr, sizeof(struct sockaddr));
+    listen(listen_fd, BACKLOG);
+
+    return listen_fd;
 }
 
 int
-main(void)
+ngd_event_accept(ngd_event_t *rev)
 {
-    int listenfd, epfd;
-    struct sockaddr_in addr;
+    ngd_conn_t *lc = rev->pdata;
 
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(PORT);
-
-    bind(listenfd, (struct sockaddr *)&addr, sizeof(addr));
-    listen(listenfd, 128);
-
-    set_nonblocking(listenfd);
-
-    epfd = epoll_create1(0);
-
-    struct epoll_event ev;
-    ev.events = EPOLLIN;
-    ev.data.fd = listenfd;
-
-    epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &ev);
-
-    struct epoll_event events[MAX_EVENTS];
-
-    printf("Listening on port %d\n", PORT);
-
-    while (1) {
-
-        int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
-
-        for (int i = 0; i < nfds; i++) {
-
-            int fd = events[i].data.fd;
-
-            if (fd == listenfd) {
-
-                /* New connection */
-
-                struct sockaddr_in client;
-                socklen_t len = sizeof(client);
-
-                int connfd = accept(listenfd,
-                                    (struct sockaddr *)&client,
-                                    &len);
-
-                if (connfd == -1)
-                    continue;
-
-                set_nonblocking(connfd);
-
-                ev.events = EPOLLIN;
-                ev.data.fd = connfd;
-
-                epoll_ctl(epfd,
-                          EPOLL_CTL_ADD,
-                          connfd,
-                          &ev);
-
-                printf("client connected: fd=%d\n", connfd);
-
-            } else {
-
-                /* Existing client has data */
-
-                char buf[1024];
-
-                ssize_t n = read(fd, buf, sizeof(buf));
-
-                if (n <= 0) {
-
-                    printf("client disconnected: fd=%d\n", fd);
-
-                    close(fd);
-
-                    epoll_ctl(epfd,
-                              EPOLL_CTL_DEL,
-                              fd,
-                              NULL);
-
-                    continue;
-                }
-
-                write(fd, buf, n); /* echo */
-            }
-        }
-    }
+    accept(lc->fd, (struct sockaddr *)NULL, NULL);
 
     return 0;
+}
+
+
+int
+main()
+{
+    int listen_fd, epfd;
+    struct epoll_event ev;
+    ngd_conn_t lc;
+    lc.fd = create_listen_fd();
+    lc.read->handler = ngd_accept_conn;
+
+
+    epfd = epoll_create1(0);
+    ev.events = EPOLLIN;
+    ev.data.ptr = c;
+
+
+
+
+
 }

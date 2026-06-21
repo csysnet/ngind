@@ -2,6 +2,8 @@
 #define POOL_H
 //allo all here, no matter size
 //one free
+#include <stdio.h>
+
 
 #define POOL_ALIGNMENT       sizeof(unsigned long)
 #define NGX_MAX_ALLOC_FROM_POOL  (4095)
@@ -14,21 +16,21 @@ typedef struct pool_block_t {
     u_char *last;
     u_char *end;
     struct pool_block_t *next;
-} pool_data_t;
+} pool_block_t;
 
 
-typedef struct pool_large_s {
+typedef struct pool_large_t {
     struct pool_large_t *next;
-    void *alloc;
+    void *pdata;
 } pool_large_t;
 
-typedef struct pool_s {
-    pool_data_t d;
+typedef struct pool_t {
+    pool_block_t d;
 
     size_t used;
     size_t max;
 
-    struct pool_s *current;
+    struct pool_t *current;
     struct pool_large_s *large;
 } pool_t;
 
