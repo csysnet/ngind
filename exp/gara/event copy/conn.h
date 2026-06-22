@@ -1,5 +1,6 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef CONN_H
+#define CONN_H
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,28 +8,8 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
 #include <string.h>
-#define PORT 8080
-#define MAX_EVENTS 64
-#define BACKLOG 10
-
-typedef struct {
-    u_char *pos;
-    u_char *last;
-    off_t *fpos;
-    off_t *flast;
-
-    unsigned isfile;
-    int fd;
-    u_char *start;
-    u_char *end;
-} ngd_buf_t;
-
-typedef struct ngd_event_t {
-    void *pdata;
-    int (*handler)(struct ngd_event_t *ev);
-} ngd_event_t;
+#include "ev.h"
 
 typedef struct ngd_conn_t {
     int fd;
@@ -42,8 +23,18 @@ typedef struct ngd_conn_t {
     ngd_event_t *write;
     ngd_buf_t *buf;
     void *pdata;
+    int closed;
 } ngd_conn_t;
 
+typedef struct {
+    int fd;
+    int (*handler)(ngd_conn_t *c);
+} ngd_listener_t;
+
+ngd_conn_t *ngd_conn_create(int fd);
+ngd_conn_t *ngd_conn_listener_create(int port, int backlog, int(*handler)(ngd_conn_t *c));
+int ngd_conn_accept(int lfd);
+int ngd_conn_close(int fd);
 
 
 #endif

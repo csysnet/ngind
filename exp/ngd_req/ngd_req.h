@@ -1,6 +1,15 @@
 #ifndef NGD_REQ_H
 #define NGD_REQ_H
 
+typedef struct {
+    int epfd;
+    int max_events;
+    struct epoll_event *events;
+
+    // timer_manager_t timers;
+    // queue_t posted_events
+} ngd_event_cxt_t;
+
 #include "ngd_pseudo.h"
 #define NGD_PARSE_HEADER_DONE 1
 

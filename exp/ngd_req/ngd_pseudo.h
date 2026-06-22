@@ -8,7 +8,7 @@
 
 typedef struct {
 
-} ngd_listening_t
+} ngd_listening_t;
 
 typedef struct {
     u_char *pos;
@@ -47,7 +47,7 @@ ps(void *buf, size_t buflen)
 
 typedef struct ngd_conn_t {
     int fd;
-    ssize_t (*recv)(ngd_conn_t *c,
+    ssize_t (*recv)(struct ngd_conn_t *c,
                        u_char *buf,
                        size_t size);
 

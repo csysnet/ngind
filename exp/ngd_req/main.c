@@ -1,6 +1,13 @@
 #include "ngd_req.h"
 
+// typedef struct {
+//     int epfd;
+//     int max_events;
+//     struct epoll_event *events;
 
+//     // timer_manager_t timers;
+//     // queue_t posted_events
+// } ngd_event_cxt_t;
 void
 test()
 {
