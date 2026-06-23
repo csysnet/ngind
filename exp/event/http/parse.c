@@ -60,3 +60,68 @@ done:
     r->state = ps_start;
     return NGD_OK;
 }
+
+
+int
+ngd_http_parse_header_line(ngd_req_t *r, ngd_buf_t *b)
+{
+    enum {
+        ps_start=0,
+        ps_key,
+        ps_space_value,
+        ps_value
+    } state;
+    u_char *p;
+
+    state = r->state;
+
+    for (p = b->pos; p < b->last; p++)
+    {
+        switch (state)
+        {
+            case ps_start:
+                if (*p == '\r')
+                    break;
+
+                if (*p == '\n')
+                    goto header_done;
+
+                r->start_key = p;
+                state = ps_key;
+                break;
+
+            case ps_key:
+                if (*p == ' ') {
+                    r->end_key = p - 1;
+                    state = ps_space_value;
+                    break;
+                }
+                break;
+
+            case ps_space_value:
+                r->start_value = p;
+                state = ps_value;
+                break;
+
+            case ps_value:
+                if (*p == '\n') {
+                    r->end_value = p - 1;
+                    goto done;
+                }
+                break;
+        }
+    }
+    b->pos = b->last;
+    r->state = state;
+    return NGD_AGAIN;
+
+done:
+    b->pos = p + 1;
+    r->state = ps_start;
+    return NGD_OK;
+
+header_done:
+    b->pos = p + 1;
+    r->state = ps_start;
+    return NGD_PARSE_HEADER_DONE;
+}

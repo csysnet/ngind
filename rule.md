@@ -15,7 +15,9 @@ start
 main + ngd_pseudo.h, general place include everything, split on main
 switch state, //today,tomorrow
 virtual main method
-gcc -Icore -Ihttp -o serv serv.c core/*.c http/*.cs
+gcc -Icore -Ihttp -o serv serv.c core/*.c http/*.c
+gcc -o serv serv.c core/*.c http/*.c && ./serv
+nc localhost 8081
 core/core.h include core/*.h 
 core/*.c include core/core.h for user define, and allow include system func inside as needed
 each .h forward declaration for what they want to use, and stay alone, except with system types

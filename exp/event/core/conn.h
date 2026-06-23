@@ -16,7 +16,7 @@ typedef struct ngd_conn_t {
     ngd_event_t *write;
 
     ngd_buf_t *buf;
-
+    void *ssl;
     void *pdata;
 
     unsigned closed:1;
@@ -27,10 +27,13 @@ typedef struct ngd_listener_t {
     int (*handler)(ngd_conn_t *c);
 } ngd_listener_t;
 
+
 ngd_conn_t *ngd_conn_create(int fd);
 ngd_conn_t *ngd_conn_listener_create(int port, int backlog, int(*handler)(ngd_conn_t *c));
 int ngd_conn_accept(int lfd);
 int ngd_conn_close(int fd);
+int ngd_conn_set_nonblocking(int fd);
+
 
 
 #endif

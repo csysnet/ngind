@@ -8,6 +8,8 @@ typedef struct ngd_buf_t ngd_buf_t;
 typedef struct ngd_conn_t ngd_conn_t;
 typedef struct ngd_event_t ngd_event_t;
 
+#define NGD_PARSE_HEADER_DONE 1
+
 typedef struct {
     ngd_str_t *key;
     ngd_str_t *value;
@@ -47,6 +49,7 @@ int ngd_wait_req(ngd_event_t *rev);
 int ngd_http_empty_handler(ngd_event_t *wev);
 int ngd_http_block_reading(ngd_event_t *rev);
 int ngd_http_conn_switch(ngd_event_t *rev);
+int ngd_http_read_req(ngd_event_t *rev);
 //
 int ngd_http_proc_reqline(ngd_event_t *rev);
 int ngd_http_proc_headers(ngd_event_t *rev);
@@ -54,4 +57,5 @@ int ngd_http_proc_body(ngd_event_t *rev);
 int ngd_http_build_res(ngd_event_t *wev);
 //
 int ngd_http_parse_reqline(ngd_req_t *r, ngd_buf_t *b);
+int ngd_http_parse_header_line(ngd_req_t *r, ngd_buf_t *b);
 #endif

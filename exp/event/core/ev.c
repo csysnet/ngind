@@ -1,13 +1,18 @@
 //sys include
+#include <stdio.h>
+
 #include <stdlib.h> //maloc
 #include <stdint.h> //uint32_t
 #include <sys/epoll.h> //epoll_create1, epoll_ctl, epoll_wait
 //usr include
 #include "core.h"
+
 //code
 static int epfd;
 static struct epoll_event *events;
 static int nevents;
+
+
 
 int
 ngd_event_init(void)
@@ -15,6 +20,16 @@ ngd_event_init(void)
     nevents = 1024;
     epfd = epoll_create1(0);
     events = malloc(sizeof(struct epoll_event) * nevents);
+}
+
+int
+ngd_event_loop(void)
+{
+    while (1)
+    {
+        ngd_event_proc();
+    }
+    return NGD_OK;
 }
 
 int
@@ -30,6 +45,7 @@ ngd_event_proc(void)
     for (i=0;i<n;i++)
     {
         c = events[i].data.ptr;
+
         revents = events[i].events;
         rev = c->read;
         wev = c->write;
@@ -40,18 +56,8 @@ ngd_event_proc(void)
         if (revents & EPOLLOUT)
             wev->handler(wev);
     }
+    return NGD_OK;
 }
-
-int
-ngd_event_loop(void)
-{
-    while (1)
-    {
-        ngd_event_proc();
-    }
-
-}
-
 
 int
 ngd_event_accept(ngd_event_t *rev)
@@ -64,11 +70,12 @@ ngd_event_accept(ngd_event_t *rev)
 
     ls = lc->pdata;
     cli_fd = ngd_conn_accept(ls->fd);
-
+    ngd_conn_set_nonblocking(cli_fd);
     c = ngd_conn_create(cli_fd);
     ls->handler(c);
 
     ngd_event_register_conn(c);
+    return NGD_OK;
 }
 
 int
@@ -78,9 +85,8 @@ ngd_event_register_conn(ngd_conn_t *c)
 
     ee.events = EPOLLIN;
     ee.data.ptr = c;
-
     epoll_ctl(epfd, EPOLL_CTL_ADD, c->fd, &ee);
-
+    return NGD_OK;
 }
 
 int

@@ -54,6 +54,8 @@ ngd_proc_reqline(ngd_event_t *rev)
 
         if  (rc == NGD_OK) {
             ngd_proc_headers(rev);
+            rev = ngd_proc_headers;
+            return
         }
 
         if (rc == NGD_AGAIN) {
