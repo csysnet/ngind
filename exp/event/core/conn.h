@@ -6,6 +6,7 @@
 typedef unsigned char u_char;
 typedef struct ngd_event_t ngd_event_t;
 typedef struct ngd_buf_t ngd_buf_t;
+typedef struct ngd_ssl_ctx_t ngd_ssl_ctx_t;
 
 typedef struct ngd_conn_t {
     int fd;
@@ -17,15 +18,17 @@ typedef struct ngd_conn_t {
 
     ngd_buf_t *buf;
     void *ssl;
+    void *
     void *pdata;
 
     unsigned closed:1;
 } ngd_conn_t;
 
-typedef struct ngd_listener_t {
+typedef struct ngd_listening_t {
     int fd;
+    ngd_ssl_ctx_t *ssl_ctx;
     int (*handler)(ngd_conn_t *c);
-} ngd_listener_t;
+} ngd_listening_t;
 
 
 ngd_conn_t *ngd_conn_create(int fd);

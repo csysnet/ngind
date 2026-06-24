@@ -125,3 +125,23 @@ ngd_event_del(ngd_event_t *ev)
 
     epoll_ctl(epfd, EPOLL_CTL_DEL, c->fd, NULL);
 }
+
+
+//ngd_event_init_listening_sockets
+int
+ngd_event_process_init(ngd_cycle_t *cycle)
+{
+    ngd_listening_t *ls;
+    ngd_conn_t *c;
+    for (int i=0; i<cycle->nlistening; i++)
+    {
+        ls = cycle->listening[i];
+        c = ngd_get_connection(ls->fd);
+        c->listening = ls;
+
+        c->read->handler = ngd_event_accept;
+        ngd_event_add(c);
+    }
+
+    return NGD_OK
+}

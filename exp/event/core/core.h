@@ -4,7 +4,8 @@
 #include "buf.h"
 #include "conn.h"
 #include "ev.h"
-
+#include "listening.h"
+#include "cycle.h"
 //dir
 #define NGD_OK 0
 #define NGD_AGAIN -1
