@@ -11,6 +11,16 @@ ps(void *buf, size_t buflen)
 
 }
 
+
+static ngd_event_init
+ngd_epoll_ctl(ngd_conn_t *c, int op, uint32_t events)
+{
+    struct epoll_event ee;
+    ee.events = events;
+    ee.data.ptr = c;
+    return epoll_ctl(epfd, op, c->fd, op == EPOLL_CTL_DEL ? NULL : &ee);
+}
+
 int
 ngd_http_read_req(ngd_event_t *rev)
 {
@@ -33,8 +43,6 @@ ngd_http_read_req(ngd_event_t *rev)
 int
 ngd_http_init_conn(ngd_conn_t *c)
 {
-    c->send = ngd_unix_send;
-    c->recv = ngd_unix_recv;
 
     // printf("reach ngd_http_init_conn\n");
     c->read->handler = ngd_wait_req;
@@ -136,15 +144,14 @@ ngd_http_proc_headers(ngd_event_t *rev)
 
         rc = ngd_http_parse_header_line(r, r->header_in);
         if (rc == NGD_OK) {
-            ps(r->start_key, r->end_key - r->start_key);
-            printf(":");
-            ps(r->start_value, r->end_value-r->start_value);
-            printf("\n");
+            r->headers[hpos].key->pdata = r->start_key;
+            r->headers[hpos].key->len = r->end_key - r->start_key;
+            r->headers[hpos].value->pdata = r->start_value;
+            r->headers[hpos].value->len = r->end_value-r->start_value;
             continue;
         }
 
         if (rc == NGD_AGAIN) {
-            printf("HEADER FULL DONE");
             continue;
         }
 

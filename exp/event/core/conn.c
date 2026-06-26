@@ -30,6 +30,9 @@ ngd_conn_create(int fd)
     c->write = malloc(sizeof(ngd_event_t));
     c->write->active = 1;
 
+    c->send = ngd_unix_send;
+    c->recv = ngd_unix_recv;
+
     return c;
 }
 

@@ -23,7 +23,7 @@ typedef struct {
 
     ngd_buf_t *header_in;
 
-    hline headers[64];
+    hline headers[128];
     size_t hpos;
 
     //cache

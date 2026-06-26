@@ -17,7 +17,7 @@ typedef struct ngd_listening_t {
     int (*handler)(ngd_conn_t *c);
 } ngd_listening_t;
 
-ngd_listening_t *ngd_create_listening(uint16_t port);
+ngd_listening_t *ngd_create_listening(uint16_t port, int (*handler)(ngd_conn_t *c));
 int ngd_open_listening_sockets(ngd_cycle_t *cycle);
 void ngd_close_listening_sockets(ngd_cycle_t *cycle);
 
