@@ -112,12 +112,10 @@ ngd_parse_header_line(ngd_req_t *r, ngd_buf_t *b)
     b->pos = b->last;
     r->state = state;
     return NGD_AGAIN;
-
 done:
     b->pos = p + 1;
     r->state = ps_start;
     return NGD_OK;
-
 header_done:
     b->pos = p + 1;
     r->state = ps_start;

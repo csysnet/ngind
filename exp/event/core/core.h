@@ -10,11 +10,6 @@
 #define NGD_OK 0
 #define NGD_AGAIN -1
 
-typedef struct ngd_str_t {
-    u_char  *pdata;
-    size_t len;
-} ngd_str_t;
-
 
 //io
 #include <sys/socket.h>

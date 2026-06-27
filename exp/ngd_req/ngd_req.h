@@ -30,6 +30,8 @@ typedef struct {
     int state;
     int method;
     //
+    //
+    int method;
     u_char *start_method;
     u_char *end_method;
     u_char *start_uri;

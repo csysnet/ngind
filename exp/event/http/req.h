@@ -41,6 +41,8 @@ typedef struct {
     u_char *end_key;
     u_char *start_value;
     u_char *end_value;
+    long content_length;
+    int chunked;
 } ngd_req_t;
 
 //

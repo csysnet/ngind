@@ -1,5 +1,6 @@
 #include "ngd_req.h"
 #include "ngd_pseudo.h"
+#include "string.h"
 
 
 
