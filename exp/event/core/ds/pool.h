@@ -8,6 +8,7 @@
 typedef unsigned char u_char;
 
 typedef struct pool_block_t {
+    int fail;
     size_t used;
     u_char *last;
     u_char *end;
@@ -20,10 +21,9 @@ typedef struct pool_large_t {
 } pool_large_t;
 
 typedef struct pool_t {
-    size_t bmax;
-
+    size_t bsize;
     pool_block_t *blocks;
-    pool_block_t *current;
+    pool_block_t *busy_blocks;
 
     pool_large_t *large;
 
