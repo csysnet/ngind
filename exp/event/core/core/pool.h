@@ -1,11 +1,11 @@
 #ifndef POOL_H
 #define POOL_H
+#include <stddef.h>
+#include "types.h"
 
 #define POOL_ALIGNMENT       sizeof(unsigned long)
-#define MAX_ALLOC  (4095)
-#define NGX_DEFAULT_POOL_SIZE    (16 * 1024)
+#define BLOCKSIZE  4096
 
-typedef unsigned char u_char;
 
 typedef struct pool_block_t {
     int fail;
@@ -16,21 +16,20 @@ typedef struct pool_block_t {
 } pool_block_t;
 
 typedef struct pool_large_t {
-    void *pdata;
     struct pool_large_t *next;
 } pool_large_t;
 
 typedef struct pool_t {
-    size_t bsize;
     pool_block_t *blocks;
     pool_block_t *busy_blocks;
 
-    pool_large_t *large;
+    pool_large_t *large_blocks;
 
 } pool_t;
 
-pool_t *pool_create(size_t bsize);
+pool_t *pool_create();
 void *pool_alloc(pool_t *pool, size_t size);
+void *pool_calloc(pool_t *pool, size_t size);
 void pool_destroy(pool_t *pool);
 
 #endif

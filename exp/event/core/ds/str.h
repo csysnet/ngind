@@ -1,12 +1,12 @@
-#ifndef NGD_STR_T
-#define NGD_STR_T
+#ifndef STR_T
+#define STR_T
 
-typedef struct ngd_str_t {
-    u_char  *pdata;
+typedef unsigned char u_char;
+
+typedef struct str_t {
+    u_char *pdata;
     size_t len;
-} ngd_str_t;
+} str_t;
 
-int ngd_str_cmp(ngd_str_t s1, ngd_str_t s2)
-
-
+int str_cmp(str_t *s1, str_t *s2);
 #endif
