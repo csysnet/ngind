@@ -1,6 +1,5 @@
 #ifndef NGD_LISTENING_H
 #define NGD_LISTENING_H
-#include <stdint.h>
 
 typedef struct ngd_ssl_ctx_t ngd_ssl_ctx_t;
 typedef struct ngd_cycle_t cycle;
@@ -17,7 +16,7 @@ typedef struct ngd_listening_t {
     int (*handler)(ngd_conn_t *c);
 } ngd_listening_t;
 
-ngd_listening_t *ngd_create_listening(uint16_t port, int (*handler)(ngd_conn_t *c));
+ngd_listening_t *ngd_create_listening(uint16_t port);
 int ngd_open_listening_sockets(ngd_cycle_t *cycle);
 void ngd_close_listening_sockets(ngd_cycle_t *cycle);
 

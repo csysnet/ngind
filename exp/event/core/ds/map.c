@@ -1,5 +1,11 @@
 #include "map.h"
 
+static str_t *
+map_hash(str_t *key)
+{
+
+}
+
 
 map_t *
 map_create(pool_t *pool, size_t bucket_count)

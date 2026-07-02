@@ -20,34 +20,26 @@ ngd_create_listening(uint16_t port)
     return ls;
 }
 int
-ngd_open_listening_sockets(ngd_cycle_t *cycle)
+listening_open(listening_t *ls)
 {
     int opt;
-    ngd_listening_t *ls;
 
     opt = 1;
-    for (int i=0; i<cycle->nlistening; i++)
-    {
-        ls = cycle->listenings[i];
-        ls->fd = socket(AF_INET, SOCK_STREAM, 0);
+    ls->fd = socket(AF_INET, SOCK_STREAM, 0);
 
-        setsockopt(ls->fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(ls->fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-        bind(ls->fd, (struct sockaddr *)&ls->addr, ls->socklen);
+    bind(ls->fd, (struct sockaddr *)&ls->addr, ls->socklen);
 
-        listen(ls->fd, ls->backlog);
-
-    }
+    listen(ls->fd, ls->backlog);
 
     return NGD_OK;
 }
 
 
 void
+listening_close(listening_t *ls)
 ngd_close_listening_sockets(ngd_cycle_t *cycle)
 {
-    for (int i=0; i<cycle->nlistening; i++)
-    {
-        close(cycle->listenings[i]->fd);
-    }
+    close(ls->fd);
 }

@@ -1,10 +1,9 @@
 #ifndef POOL_H
 #define POOL_H
-#include <stddef.h>
-#include "types.h"
+#include "core.h"
 
 #define POOL_ALIGNMENT       sizeof(unsigned long)
-#define BLOCKSIZE  4096
+#define BLOCKSIZE  1024
 
 
 typedef struct pool_block_t {

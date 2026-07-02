@@ -4,6 +4,13 @@
 typedef struct ngd_conn_t ngd_conn_t;
 typedef struct ngd_listening_t ngd_listening_t;
 
+typedef struct event_loop_t {
+    int epfd;
+    struct epoll_event *events;
+    int nevents;
+} event_ctx_t;
+
+
 typedef struct ngd_event_t {
     void *pdata;
     int (*handler)(struct ngd_event_t *ev);

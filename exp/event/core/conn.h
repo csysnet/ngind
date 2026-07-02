@@ -18,7 +18,6 @@ typedef struct ngd_conn_t {
 
     ngd_buf_t *buf;
     void *ssl;
-    void *
     void *pdata;
 
     unsigned closed:1;

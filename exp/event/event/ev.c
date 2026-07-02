@@ -15,6 +15,9 @@ static int nevents;
 int
 ngd_event_init(void)
 {
+
+    cycle->event_ctx_t->epfd =
+
     nevents = 1024;
     epfd = epoll_create1(0);
     events = malloc(sizeof(struct epoll_event) * nevents);
@@ -119,6 +122,16 @@ ngd_event_del(ngd_event_t *ev)
 
 
 //ngd_event_init_listening_sockets
+int
+event_register_listening_conn(conn_t *lc)
+{
+
+    c->read->handler = event_accept;
+
+}
+
+
+
 int
 ngd_event_proc_init(ngd_cycle_t *cycle)
 {
