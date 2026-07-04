@@ -1,54 +1,97 @@
 #include "cycle.h"
 
 #include "pool.h"
+#include "event.h"
+#include "listen.h"
 
-cycle_t cycle;
-
-int
-cycle_init(int listen_cap)
+cycle *
+cycle_create(int nlisten)
 {
-    cycle->pool = pool_create();
-    cycle->listenings = pool_alloc(sizeof(listening_t) * listen_cap);
-    cycle->listen_cap = listen_cap;
-    cycle->nlistening = 0;
+    pool_t *pool;
+    cycle_t *cycle;
+
+    pool = pool_create();
+
+    cycle = pool_alloc(sizeof(cycle_t));
+
+    cycle->pool = pool;
+    cycle->listens = pool_alloc(sizeof(listen_t) * nlisten);
+    cycle->nlisten = nlisten;
+    cycle->ilisten = 0;
+
+    return cycle;
 }
 
+int
+cycle_init_event(void)
+{
+    event_init();
+    return NGD_OK;
+}
 
 int
-cycle_open_listenings(cycle_t *cycle)
+cycle_add_listen(cycle_t *cycle, uint16_t port, int ssl, int (handler*)(conn_t *c))
 {
-    for (int i=0; i<cycle->nlistening; i++)
-    {
-        listening_open(cycle->listenings[i]);
+    listen_t *ls;
+
+    ls = pool_alloc(cycle->pool, sizeof(listen_t));
+    ls->handler = handler;
+    if (!ssl)
+        ls->ssl_ctx = NULL;
+    else {
+        ls->ssl_ctx = ssl_create_ctx();
+        if (ls->ssl_ctx == NULL) {
+            return NGD_ERR;
+        }
     }
+
+    if (cycle->ilisten >= cycle->nlisten)
+        return NGD_ERR;
+
+    cycle->listens[ilisten] = ls;
+    cycle->ilisten++;
 
     return NGD_OK;
 }
 
-void
-cycle_close_listenings(cycle_t *cycle)
-{
-    for (int i=0; i<cycle->nlistening; i++)
-    {
-        listening_close(cycle->listenings[i])
-    }
-}
-
 int
-cycle_add_listening(cycle *cycle)
+cycle_open_listens(cycle_t *cycle)
 {
+    int n;
 
+    n = cycle->ilisten + 1;
+    for (int i=0; i<n; i++)
+        if (listen_open((listen_t *)cycle->listens[i]) == NGD_ERR)
+            return NGD_ERR;
+    return NGD_OK;
 }
 
 
 int
-cycle_register_listening_event(cycle *cycle)
+cycle_register_listens(cycle_t *cycle)
 {
-    ngd_listening_t *ls;
-    for (int i=0; i<cycle->nlistening; i++)
-    {
-        event_register_listening(cycle->listenings[i]);
-    }
+    int n;
 
-    return NGD_OK
+    n = cycle->ilisten + 1;
+    for (int i=0; i<n; i++)
+        if (event_regis_listen((listen_t *)cycle->listens[i]) == NGD_ERR)
+            return NGD_ERR;
+
+    return NGD_OK;
+}
+
+int
+cycle_close(cycle_t *cycle)
+{
+    int n;
+
+    n = cycle->ilisten + 1;
+    for (int i=0; i<n; i++)
+        if (listen_close((listen_t *)cycle->listens[i]) == NGD_ERR)
+            return NGD_ERR;
+
+    if (pool_destroy(cycle->pool); == NGD_ERR)
+        return NGD_ERR;
+
+    return NGD_OK;
 }

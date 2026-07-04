@@ -18,3 +18,8 @@ bug cret satisfy, right!!
 
 cap duoi muon tao cai gi, phai qua cap tren
 lower owning upper
+either init or (create, destroy/close)
+pdata for things without size
+event write ative
+void for nothing
+rule forwarddeclare typedef struct listen_t listen_t;
