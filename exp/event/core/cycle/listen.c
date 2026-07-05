@@ -1,13 +1,14 @@
+//
 #include <sys/socket.h>   // sockaddr, socket(), setsockopt(), bind(), listen()
 #include <netinet/in.h>   // sockaddr_in, htons(), htonl(), INADDR_ANY
 #include <unistd.h>       // close()
-
+//
 #include "listen.h"
 #include "str.h"
 
 
 int
-listen_open(listen_t *ls)
+listen_init(listen_t *ls)
 {
     struct sockaddr_in addr;
     int opt;

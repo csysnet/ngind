@@ -1,5 +1,6 @@
 #ifndef LISTEN_H
 #define LISTEN_H
+
 #include "core.h"
 
 #define BACKLOG 100
@@ -13,7 +14,7 @@ typedef struct listen_t {
     ssl_ctx_t *ssl_ctx;
 } listen_t;
 
-int listen_open(listen_t *ls);
+int listen_init(listen_t *ls);
 int listen_close(listen_t *ls);
 
 #endif

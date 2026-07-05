@@ -61,7 +61,7 @@ cycle_open_listens(cycle_t *cycle)
 
     n = cycle->ilisten + 1;
     for (int i=0; i<n; i++)
-        if (listen_open((listen_t *)cycle->listens[i]) == NGD_ERR)
+        if (listen_init((listen_t *)cycle->listens[i]) == NGD_ERR)
             return NGD_ERR;
     return NGD_OK;
 }
