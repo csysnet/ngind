@@ -12,4 +12,6 @@ typedef struct buf_t {
     unsigned file:1;
 } buf_t;
 
+int buf_init(buf_t *b, size_t size);
+
 #endif
