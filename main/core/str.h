@@ -1,7 +1,7 @@
 #ifndef STR_T
 #define STR_T
 
-typedef unsigned char u_char;
+#include "core.h"
 
 typedef struct str_t {
     u_char *p;

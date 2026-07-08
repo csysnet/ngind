@@ -4,7 +4,9 @@
 #include <openssl/ssl.h>
 
 #include "core.h"
-#include "pool.h"
+
+typedef struct pool_t pool_t;
+typedef struct pool
 
 typedef struct ssl_ctx_t {
     SSL_CTX *ctx;
