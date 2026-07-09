@@ -28,3 +28,5 @@ rule forwarddeclare typedef struct listen_t listen_t;
 rule of writing other include components that we use, everytime we use that, check the top
 allow other lib at header
 create if it own itself
+
+minimize header as much as posible
