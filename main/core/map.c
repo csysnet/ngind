@@ -23,7 +23,7 @@ map_insert(map_t *map, str_t *key, void *value)
     int index;
     mapnode_t *p;
 
-    index = hash(key) % bucket_count;
+    index = hash(key) % map->bucket_count;
     //
     p = map->buckets[index];
     while (p != NULL)
@@ -48,6 +48,15 @@ void *
 map_get(map_t *map, str_t *key)
 {
     int index;
-
+    mapnode_t *p;
+    index = hash(key) % map->bucket_count;
+    p = map->buckets[index];
+    while (p != NULL)
+    {
+        if (str_cmp(p->key, key) == 0)
+            break;
+        p = p->next;
+    }
+    return p;
 
 }
