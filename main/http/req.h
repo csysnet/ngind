@@ -39,6 +39,7 @@ typedef struct {
 int http_wait_req(event_t *rev);
 int http_empty_handler(event_t *wev);
 int http_block_reading(event_t *rev);
+int http_read_req(event_t *rev);
 //
 int http_proc_reqline(event_t *rev);
 int http_proc_headers(event_t *rev);
@@ -46,7 +47,6 @@ int http_proc_body(event_t *rev);
 int http_build_req(event_t *wev);
 //
 int http_conn_switch(event_t *rev);
-int http_read_req(event_t *rev);
 //
 int http_parse_reqline(req_t *r, buf_t *b);
 in http_parse_header_line(req_t *r, buf_t *b);
