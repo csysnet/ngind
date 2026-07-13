@@ -101,6 +101,7 @@ http_proc_headers(event_t *rev)
 {
     conn_t *c;
     req_t *r;
+    str_t *key, *value;
     ssize_t n;
     int rc;
     //
@@ -115,8 +116,27 @@ http_proc_headers(event_t *rev)
 
         rc = http_parse_header_line(r, r->header_in);
         if (rc == NGD_OK) {
-            map_insert(r->headers, )
+            key = pool_alloc(c->pool, sizeof(str_t));
+            key->p = r->start_key;
+            key->len = r->end_key - r->start_key;
+            //
+            value = pool_alloc(c->pool, sizeof(str_t));
+            value->p = r->start_value;
+            value->len = r->end_value - r->start_value;
+            //
+            map_insert(r->headers, key, value);
+            //
+            continue;
         }
+
+        if (rc == HTTP_PARSE_HEADER_DONE) {
+            printf("HEADER FULLY DONE\n");
+        }
+
+
+        if (rc == NGD_AGAIN)
+            continue;
+
     }
 }
 int http_proc_body(event_t *rev);

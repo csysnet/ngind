@@ -4,6 +4,7 @@
 #include "core.h"
 
 #define MAX_INBUF 1024
+#define HTTP_PARSE_HEADER_DONE 1
 
 typedef struct str_t str_t;
 typedef struct map_t map_t;
@@ -49,5 +50,5 @@ int http_build_req(event_t *wev);
 int http_conn_switch(event_t *rev);
 //
 int http_parse_reqline(req_t *r, buf_t *b);
-in http_parse_header_line(req_t *r, buf_t *b);
+int http_parse_header_line(req_t *r, buf_t *b);
 #endif
