@@ -9,6 +9,8 @@
 typedef struct str_t str_t;
 typedef struct map_t map_t;
 typedef struct conn_t conn_t;
+typedef struct event_t event_t;
+typedef struct buf_t buf_t;
 
 typedef struct {
     str_t *smethod;
@@ -16,12 +18,14 @@ typedef struct {
     str_t *sver;
 
     buf_t *header_in;
-    map_t headers;
+    map_t *headers;
 
     //cache
     int method;
+    int state;
     //
     u_char *start_method;
+    u_char *end_method;
     u_char *start_uri;
     u_char *end_uri;
     u_char *start_ver;

@@ -24,13 +24,6 @@ cycle_create(int nlisten)
 }
 
 int
-cycle_init_event(void)
-{
-    event_init();
-    return NGD_OK;
-}
-
-int
 cycle_add_listen(cycle_t *cycle, uint16_t port, int ssl, int (*handler)(conn_t *c))
 {
     listen_t *ls;
@@ -62,7 +55,7 @@ cycle_open_listens(cycle_t *cycle)
 {
     int n;
 
-    n = cycle->ilisten + 1;
+    n = cycle->ilisten;
     for (int i=0; i<n; i++)
         if (listen_init((listen_t *)cycle->listens[i]) == NGD_ERR)
             return NGD_ERR;
@@ -75,11 +68,24 @@ cycle_register_listens(cycle_t *cycle)
 {
     int n;
 
-    n = cycle->ilisten + 1;
+    n = cycle->ilisten;
     for (int i=0; i<n; i++)
         if (event_regis_listen((listen_t *)cycle->listens[i]) == NGD_ERR)
             return NGD_ERR;
 
+    return NGD_OK;
+}
+
+int
+cycle_init_event(void)
+{
+    event_init();
+    return NGD_OK;
+}
+int
+cycle_event_loop(void)
+{
+    event_loop();
     return NGD_OK;
 }
 

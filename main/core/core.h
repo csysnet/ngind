@@ -3,6 +3,9 @@
 #include <stddef.h>
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <unistd.h>
+
 
 #define NGD_OK 0
 #define NGD_ERR -1
@@ -10,5 +13,11 @@
 
 typedef unsigned char u_char;
 
+static void
+ps(void *buf, size_t buflen)
+{
+    for (int i = 0; i<buflen; i++)
+        printf("%c", ((char*)buf)[i]);
+}
 
 #endif

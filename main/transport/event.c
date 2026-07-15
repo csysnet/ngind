@@ -36,6 +36,7 @@ event_regis_listen(listen_t *ls)
     //
     lc = conn_create(ls->fd, ls);
     conn_set_nonblock(ls->fd);
+    lc->read->pdata = lc;
     lc->read->handler = event_accept;
     event_set(lc, EPOLL_CTL_ADD, EPOLLIN);
     //
@@ -45,7 +46,8 @@ event_regis_listen(listen_t *ls)
 int
 event_accept(event_t *rev)
 {
-    conn_t *c, *lc;
+
+    conn_t *lc, *c;
     listen_t *ls;
     int cli_fd;
     //
@@ -110,6 +112,7 @@ event_loop(void)
     //
     for (;;)
     {
+        printf("reach event looop\n");
         n = epoll_wait(epfd, events, MAX_EVENTS, EVENT_WAITTIME);
         for (int i=0; i<n; i++)
         {

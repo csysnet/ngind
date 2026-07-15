@@ -31,3 +31,10 @@ create if it own itself
 
 minimize header as much as posible
 cpchange header api only
+
+
+b = pool_alloc(c->pool, sizeof(buf_t));
+    b->start = pool_alloc(c->pool, MAX_INBUF);
+    b->pos = b->start;
+    b->last = b->start;
+    b->end = b->start + MAX_INBUF;

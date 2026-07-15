@@ -33,12 +33,7 @@ send_msg(int fd, void *buf, size_t buflen)
     }
 }
 
-void
-ps(void *buf, size_t buflen)
-{
-    for (int i = 0; i<buflen; i++)
-        printf("%c", ((char*)buf)[i]);
-}
+
 
 void
 send_ok(int cli_fd, void *buf, size_t buflen, const char *fname)

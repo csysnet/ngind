@@ -10,8 +10,9 @@ typedef struct buf_t {
     off_t *flast;
     int fd;
     unsigned file:1;
+    u_char *start;
+    u_char *end;
 } buf_t;
 
-int buf_init(buf_t *b, size_t size);
 
 #endif

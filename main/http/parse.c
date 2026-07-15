@@ -1,9 +1,15 @@
 #include "req.h"
-
-
+#include "buf.h"
 int
 http_parse_reqline(req_t *r, buf_t *b)
 {
+    // printf("reach parseewqewqeqweqw\n");
+    // printf("start: %lu\n", b->start);
+    // printf("pos: %lu\n", b->pos);
+    // printf("last: %lu\n", b->last);
+    // printf("end: %lu\n", b->end);
+    // printf("diff: %lu\n", b->last - b->pos);
+
     enum {
         ps_start=0,
         ps_method,
@@ -13,7 +19,8 @@ http_parse_reqline(req_t *r, buf_t *b)
         ps_ver
     } state;
     u_char *p;
-    char c;
+    u_char c;
+    // sleep(10000000000);
     //
     state = r->state;
     //
@@ -49,7 +56,7 @@ http_parse_reqline(req_t *r, buf_t *b)
             case ps_ver:
                 if (c == '\n') {
                     r->end_ver = p - 1;
-                    goto done:
+                    goto done;
                 }
                 break;
         }
@@ -58,6 +65,8 @@ http_parse_reqline(req_t *r, buf_t *b)
     r->state = state;
     return NGD_AGAIN;
 done:
+    printf("reach done");
+    printf("diff: %lu\n", b->last - b->pos);
     b->pos = p + 1;
     r->state = ps_start;
     return NGD_OK;
@@ -73,7 +82,7 @@ http_parse_header_line(req_t *r, buf_t *b)
         ps_value
     } state;
     u_char *p;
-    char c;
+    u_char c;
     //
     state = r->state;
     //
@@ -123,6 +132,6 @@ done:
     return NGD_OK;
 header_done:
     b->pos = p + 1;
-    r->state = ps_state;
+    r->state = ps_start;
     return HTTP_PARSE_HEADER_DONE;
 }

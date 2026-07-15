@@ -15,7 +15,12 @@ unix_send(conn_t *c, u_char *buf, size_t size)
 static ssize_t
 unix_recv(conn_t *c, u_char *buf, size_t size)
 {
-    return recv(c->fd, (void *)buf, size, 0);
+    printf("recv\n");
+    ssize_t n;
+    n = recv(c->fd, (void *)buf, size, 0);
+    buf[10] = '\0';
+    printf("bruh:%s\n", buf);
+    return n;
 }
 
 conn_t *
@@ -31,8 +36,8 @@ conn_create(int fd, listen_t *ls)
     c->pool = pool;
     c->read = pool_alloc(pool, sizeof(event_t));
     c->write = pool_alloc(pool, sizeof(event_t));
-    c->send = unix_recv;
-    c->recv = unix_send;
+    c->send = unix_send;
+    c->recv = unix_recv;
     // c->ssl = NULL;
     // C->pdata = NULL;
     //
