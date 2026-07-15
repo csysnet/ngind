@@ -13,11 +13,5 @@
 
 typedef unsigned char u_char;
 
-static void
-ps(void *buf, size_t buflen)
-{
-    for (int i = 0; i<buflen; i++)
-        printf("%c", ((char*)buf)[i]);
-}
 
 #endif

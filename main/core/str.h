@@ -10,4 +10,5 @@ typedef struct str_t {
 
 int str_cmp(str_t *s1, str_t *s2);
 int str_zeros(u_char *pdata, size_t len);
+void ps(str_t *s);
 #endif

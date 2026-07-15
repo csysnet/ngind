@@ -22,3 +22,4 @@ core/core.h include core/*.h
 core/*.c include core/core.h for user define, and allow include system func inside as needed
 each .h forward declaration for what they want to use, and stay alone, except with system types
 typedef struct dat dat;
+\n for immediate

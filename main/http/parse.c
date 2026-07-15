@@ -3,13 +3,6 @@
 int
 http_parse_reqline(req_t *r, buf_t *b)
 {
-    // printf("reach parseewqewqeqweqw\n");
-    // printf("start: %lu\n", b->start);
-    // printf("pos: %lu\n", b->pos);
-    // printf("last: %lu\n", b->last);
-    // printf("end: %lu\n", b->end);
-    // printf("diff: %lu\n", b->last - b->pos);
-
     enum {
         ps_start=0,
         ps_method,
@@ -19,14 +12,17 @@ http_parse_reqline(req_t *r, buf_t *b)
         ps_ver
     } state;
     u_char *p;
-    u_char c;
-    // sleep(10000000000);
+    char c;
+    int i;
     //
     state = r->state;
+    i = 0;
     //
     for (p = b->pos; p < b->last; p++)
     {
+        // printf("%d.reach parse\n", i);
         c = *p;
+        printf("%c", c);
         switch (state)
         {
             case ps_start:
@@ -60,13 +56,13 @@ http_parse_reqline(req_t *r, buf_t *b)
                 }
                 break;
         }
+        i++;
     }
+    printf("\n");
     b->pos = b->last;
     r->state = state;
     return NGD_AGAIN;
 done:
-    printf("reach done");
-    printf("diff: %lu\n", b->last - b->pos);
     b->pos = p + 1;
     r->state = ps_start;
     return NGD_OK;

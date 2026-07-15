@@ -5,14 +5,16 @@
 static size_t
 hash(str_t *key, size_t m)
 {
+
     int hash_val;
     //
     hash_val = 0;
     //
     for (size_t i=0; i < key->len; i++)
     {
-        hash_val = (hash_val * key->p[i]) % m;
+        hash_val = (hash_val * key->p[i] + 1) % m;
     }
+    printf("reach hash: %lu\n",hash_val);
     //
     return hash_val;
 }
@@ -31,7 +33,6 @@ map_insert(map_t *map, str_t *key, void *value)
 {
     int index;
     mapnode_t *p;
-
     index = hash(key, map->bucket_count);
     //
     p = map->buckets[index];
@@ -46,7 +47,6 @@ map_insert(map_t *map, str_t *key, void *value)
     p->key = key;
     p->value = value;
     p->next = map->buckets[index];
-    //
     map->buckets[index] = p;
     //
     return NGD_OK;
@@ -58,14 +58,19 @@ map_get(map_t *map, str_t *key)
 {
     int index;
     mapnode_t *p;
+
     index = hash(key, map->bucket_count);
     p = map->buckets[index];
+    ps(p->value);
     while (p != NULL)
     {
-        if (str_cmp(p->key, key) == 0)
+        if (str_cmp(p->key, key) == 0) {
+            printf("equal? %d\n", str_cmp(p->key, key));
             break;
+        }
+        printf("reach while\n");
         p = p->next;
     }
-    return p;
+    return p->value;
 
 }

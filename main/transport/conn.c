@@ -15,12 +15,7 @@ unix_send(conn_t *c, u_char *buf, size_t size)
 static ssize_t
 unix_recv(conn_t *c, u_char *buf, size_t size)
 {
-    printf("recv\n");
-    ssize_t n;
-    n = recv(c->fd, (void *)buf, size, 0);
-    buf[10] = '\0';
-    printf("bruh:%s\n", buf);
-    return n;
+    return recv(c->fd, (void *)buf, size, 0);
 }
 
 conn_t *
