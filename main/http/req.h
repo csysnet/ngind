@@ -16,6 +16,8 @@ typedef struct {
     str_t *smethod;
     str_t *suri;
     str_t *sver;
+    long content_length;
+    unsigned chunked;
 
     buf_t *header_in;
     map_t *headers;
@@ -35,8 +37,6 @@ typedef struct {
     u_char *end_key;
     u_char *start_value;
     u_char *end_value;
-    long content_length;
-    unsigned chunked;
 
 } req_t;
 

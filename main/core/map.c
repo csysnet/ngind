@@ -14,17 +14,17 @@ hash(str_t *key, size_t m)
     {
         hash_val = (hash_val * key->p[i] + 1) % m;
     }
-    printf("reach hash: %lu\n",hash_val);
+    // printf("reach hash: %lu\n",hash_val);
     //
     return hash_val;
 }
 
 int
-map_init(map_t *map, pool_t *parent_pool, size_t bucket_count)
+map_init(map_t *map, pool_t *parent_pool)
 {
     map->pool = parent_pool;
-    map->buckets = pool_calloc(parent_pool, bucket_count * sizeof(mapnode_t *));
-    map->bucket_count = bucket_count;
+    map->buckets = pool_calloc(parent_pool, MAP_BUCKET_COUNT * sizeof(mapnode_t *));
+    map->bucket_count = MAP_BUCKET_COUNT;
     return NGD_OK;
 }
 
@@ -61,16 +61,13 @@ map_get(map_t *map, str_t *key)
 
     index = hash(key, map->bucket_count);
     p = map->buckets[index];
-    ps(p->value);
     while (p != NULL)
     {
         if (str_cmp(p->key, key) == 0) {
-            printf("equal? %d\n", str_cmp(p->key, key));
-            break;
+            return p->value;
         }
-        printf("reach while\n");
         p = p->next;
     }
-    return p->value;
+    return NULL;
 
 }

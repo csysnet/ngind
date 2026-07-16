@@ -27,7 +27,7 @@ http_wait_req(event_t *rev)
     r = pool_alloc(c->pool, sizeof(req_t));
     r->header_in = b;
     r->headers = pool_alloc(c->pool, sizeof(map_t));
-    map_init(r->headers, c->pool, 10);
+    map_init(r->headers, c->pool);
     r->smethod = pool_alloc(c->pool, sizeof(str_t));
     r->suri = pool_alloc(c->pool, sizeof(str_t));
     r->sver = pool_alloc(c->pool, sizeof(str_t));
@@ -126,8 +126,8 @@ http_proc_headers(event_t *rev)
     r = c->pdata;
     b = r->header_in;
     //
-    printf("diff: %lu", b->last - b->pos);
-    printf("reach proc header\n");
+    printf("diff: %lu\n", b->last - b->pos);
+    printf("reach proc header\n\n");
     for (;;)
     {
         n = http_read_req(rev);
@@ -144,7 +144,9 @@ http_proc_headers(event_t *rev)
             value->p = r->start_value;
             value->len = r->end_value - r->start_value;
             // printf("valuelen: %lu\n", value->len);
+            printf(": ");
             ps(value);
+            printf("\n");
             //
             map_insert(r->headers, key, value);
             //
@@ -153,15 +155,21 @@ http_proc_headers(event_t *rev)
 
         if (rc == HTTP_PARSE_HEADER_DONE) {
             key = pool_alloc(c->pool, sizeof(str_t));
-            key->p = pool_alloc(c->pool, sizeof(4));
-            key->len = 4;
-            key->p[0] = 'H';
-            key->p[1] = 'o';
-            key->p[2] = 's';
-            key->p[3] = 't';
-            ps(key);
+            //
+            str_from_chars(key, "Host");
             value = map_get(r->headers, key);
             // ps(value);
+            //
+            str_from_chars(key, "Connection");
+            value = map_get(r->headers, key);
+            // ps(value);
+            //
+            printf("\n\nreach done\n\n");
+            str_from_chars(key, "Transfer-Encoding");
+            value = map_get(r->headers, key);
+            // if (value)
+            //     ps(value);
+
         }
 
 

@@ -3,6 +3,9 @@
 
 #include "core.h"
 
+#define MAP_BUCKET_COUNT 1
+
+
 typedef struct map_t map_t;
 typedef struct pool_t pool_t;
 typedef struct str_t str_t;
@@ -19,7 +22,7 @@ typedef struct map_t {
     size_t bucket_count;
 } map_t;
 
-int map_init(map_t *map, pool_t *parent_pool, size_t bucket_count);
+int map_init(map_t *map, pool_t *parent_pool);
 int map_insert(map_t *map, str_t *key, void *value);
 void *map_get(map_t *map, str_t *key);
 
