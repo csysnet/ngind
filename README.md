@@ -42,3 +42,8 @@ b = pool_alloc(c->pool, sizeof(buf_t));
 file log
 
 overcomplicated!!!!!!
+a copy on map
+iron hand, no use all void
+wrap with macro
+"\n\nreach ...\n\n"
+manual rm printf

@@ -19,7 +19,7 @@ http_wait_req(event_t *rev)
     c = rev->pdata;
     //
     b = pool_alloc(c->pool, sizeof(buf_t) + MAX_INBUF);
-    b->start = b + sizeof(buf_t);
+    b->start = (u_char *)b + sizeof(buf_t);
     b->pos = b->start;
     b->last = b->start;
     b->end = b->start + MAX_INBUF;
@@ -121,6 +121,7 @@ http_proc_headers(event_t *rev)
     str_t *key, *value;
     ssize_t n;
     int rc;
+    long body_len;
     //
     c = rev->pdata;
     r = c->pdata;
@@ -154,22 +155,32 @@ http_proc_headers(event_t *rev)
         }
 
         if (rc == HTTP_PARSE_HEADER_DONE) {
+            printf("\n\nreach done\n\n");
             key = pool_alloc(c->pool, sizeof(str_t));
-            //
-            str_from_chars(key, "Host");
-            value = map_get(r->headers, key);
             // ps(value);
             //
             str_from_chars(key, "Connection");
             value = map_get(r->headers, key);
             // ps(value);
             //
-            printf("\n\nreach done\n\n");
-            str_from_chars(key, "Transfer-Encoding");
+            str_from_chars(key, "Content-Length");
             value = map_get(r->headers, key);
-            // if (value)
-            //     ps(value);
+            if (value) {
+                printf("\n\nreach str_long\n\n");
+                body_len = str_to_long(c->pool, value);
+                r->content_length = body_len
+                ps(key);
+                printf(": %ld\n", body_len);
+            }
+            //
+            str_from_chars(key, "Transfer-Encoding");
+            if (value) {
+                value = map_get(r->headers, key);
+                r->chunked = 1;
+            }
 
+            rev->handler = http_proc_body;
+            http_proc_body(rev);
         }
 
 
@@ -178,5 +189,16 @@ http_proc_headers(event_t *rev)
 
     }
 }
-int http_proc_body(event_t *rev);
+int
+http_proc_body(event_t *rev)
+{
+    conn_t *c;
+    req_t *r;
+    buf_t *b;
+    //
+    c = rev->pdata;
+    r = c->pdata;
+
+}
+
 int http_build_req(event_t *wev);
