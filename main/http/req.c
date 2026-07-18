@@ -1,4 +1,6 @@
-// //
+//
+#include
+//
 #include "req.h"
 #include "buf.h"
 #include "str.h"
@@ -198,7 +200,20 @@ http_proc_body(event_t *rev)
     //
     c = rev->pdata;
     r = c->pdata;
+    b = r->header_in;
+    //
+    http_parse_body(r, b);
 
+
+    /// write job
+    if (r->body_received > HTTP_MAX_BODY_MEM) {
+
+    }
+    if ()
+    //
+    return NGD_OK;
 }
 
-int http_build_req(event_t *wev);
+
+int
+http_build_req(event_t *wev);

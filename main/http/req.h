@@ -4,6 +4,8 @@
 #include "core.h"
 
 #define MAX_INBUF 1024
+#define HTTP_MAX_BODY_MEM 1024
+#define HTTP_MAX_BODY (1024 * 1024 * 1024 * 1024)
 #define HTTP_PARSE_HEADER_DONE 1
 
 typedef struct str_t str_t;
@@ -13,15 +15,18 @@ typedef struct event_t event_t;
 typedef struct buf_t buf_t;
 
 typedef struct {
+    //line
     str_t *smethod;
     str_t *suri;
     str_t *sver;
-    long content_length;
-    unsigned chunked;
-
+    //headers
     buf_t *header_in;
     map_t *headers;
-
+    long content_length;
+    //body
+    unsigned chunked;
+    size_t body_received;
+    size_t chunk_size;
     //cache
     int method;
     int state;
@@ -55,4 +60,5 @@ int http_conn_switch(event_t *rev);
 //
 int http_parse_reqline(req_t *r, buf_t *b);
 int http_parse_header_line(req_t *r, buf_t *b);
+int http_parse_body(req_t *r, buf_t *b);
 #endif

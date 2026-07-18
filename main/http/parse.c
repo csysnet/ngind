@@ -131,3 +131,14 @@ header_done:
     r->state = ps_start;
     return HTTP_PARSE_HEADER_DONE;
 }
+
+int
+http_parse_body(req_t *r, buf_t *b)
+{
+    enum {
+        ps_start=0,
+        ps_size,
+        ps_data,
+    } state;
+
+}
