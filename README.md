@@ -47,3 +47,4 @@ iron hand, no use all void
 wrap with macro
 "\n\nreach ...\n\n"
 manual rm printf
+aligement
