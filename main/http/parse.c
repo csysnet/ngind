@@ -135,10 +135,32 @@ header_done:
 int
 http_parse_body(req_t *r, buf_t *b)
 {
+    // 3\r\ndat\r\n0\r\n\r\n
     enum {
         ps_start=0,
-        ps_size,
-        ps_data,
+        ps_zero,
+        ps_zero_r,
+        ps_zero_rn,
+        ps_zero_rnr,
     } state;
-
+    u_char *p;
+    u_char *c;
+    //
+    state = r->state;
+    //
+    for (p = b->pos; p < b->last; p++)
+    {
+        c = *p;
+        switch (state)
+        {
+            case start: break;
+            case ps_zero: break;
+            case ps_zero_r: break;
+            case ps_zero_rn: break;
+            case ps_zero_rnr: break;
+        }
+    }
+    return NGD_AGAIN;
+done:
+    return NGD_OK;
 }

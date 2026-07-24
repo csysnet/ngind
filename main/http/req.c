@@ -197,14 +197,38 @@ http_proc_body(event_t *rev)
     conn_t *c;
     req_t *r;
     buf_t *b;
+    int ret;
+    ssize_t n;
     //
     c = rev->pdata;
     r = c->pdata;
     b = r->header_in;
     //
-    http_parse_body(r, b);
+    for (;;)
+    {
+        n = http_read_req(rev);
+        if (n == NGD_AGAIN)
+            break;
+        r->body_received += n;
+        if (r->body_received > HTTP_MAX_BODY_MEM) {
+
+            rev->handler = http_proc_body_on_file;
+            r->header_in->file = 1;
+            r->flast = 0;
+            r->fpos = 0;
+            http_proc_body_on_file(rev);
+        }
 
 
+        ret = http_parse_body(r, b);
+        if (ret == NGD_OK) {
+            http_proc_switch(rev);
+        }
+
+        if (ret == NGD_AGAIN) {
+            continue;
+        }
+    }
     /// write job
     if (r->body_received > HTTP_MAX_BODY_MEM) {
 
@@ -214,6 +238,14 @@ http_proc_body(event_t *rev)
     return NGD_OK;
 }
 
+int
+http_proc_switch(event_t *rev)
+{
+
+}
 
 int
-http_build_req(event_t *wev);
+http_build_req(event_t *wev)
+{
+
+}

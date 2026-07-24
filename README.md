@@ -48,3 +48,5 @@ wrap with macro
 "\n\nreach ...\n\n"
 manual rm printf
 aligement
+proxy and static serving, the same bro
+job, prox and static serv
