@@ -50,3 +50,10 @@ manual rm printf
 aligement
 proxy and static serving, the same bro
 job, prox and static serv
+replace line
+ret
+clcr
+
+request buffer should remain
+refer include even in header
+just give them a pool, and they dance on

@@ -138,13 +138,13 @@ http_parse_body(req_t *r, buf_t *b)
     // 3\r\ndat\r\n0\r\n\r\n
     enum {
         ps_start=0,
-        ps_zero,
-        ps_zero_r,
-        ps_zero_rn,
-        ps_zero_rnr,
+        ps_0,
+        ps_0_r,
+        ps_0_r_n,
+        ps_0_r_n_r,
     } state;
     u_char *p;
-    u_char *c;
+    u_char c;
     //
     state = r->state;
     //
@@ -153,14 +153,41 @@ http_parse_body(req_t *r, buf_t *b)
         c = *p;
         switch (state)
         {
-            case start: break;
-            case ps_zero: break;
-            case ps_zero_r: break;
-            case ps_zero_rn: break;
-            case ps_zero_rnr: break;
+            case ps_start:
+                if (c == '0')
+                    state = ps_0;
+                break;
+            case ps_0:
+                if (c == '\r')
+                    state = ps_0_r;
+                else
+                    state = ps_start;
+                break;
+            case ps_0_r:
+                if (c == '\n')
+                    state = ps_0_r_n;
+                else
+                    state = ps_start;
+                break;
+            case ps_0_r_n:
+                if (c == '\r')
+                    state = ps_0_r_n_r;
+                else
+                    state = ps_start;
+                break;
+            case ps_0_r_n_r:
+                if (c == '\n')
+                    goto done;
+                else
+                    state = ps_start;
+                break;
         }
     }
+    b->pos = b->last;
+    r->state = state;
     return NGD_AGAIN;
 done:
+    b->pos = p + 1;
+    r->state = ps_start;
     return NGD_OK;
 }

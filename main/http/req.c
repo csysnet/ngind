@@ -1,5 +1,5 @@
 //
-#include
+// #include
 //
 #include "req.h"
 #include "buf.h"
@@ -170,7 +170,7 @@ http_proc_headers(event_t *rev)
             if (value) {
                 printf("\n\nreach str_long\n\n");
                 body_len = str_to_long(c->pool, value);
-                r->content_length = body_len
+                r->content_length = body_len;
                 ps(key);
                 printf(": %ld\n", body_len);
             }
@@ -191,6 +191,60 @@ http_proc_headers(event_t *rev)
 
     }
 }
+/*
+    * on small, new body buf
+    * read body until (c1)0\r\n\r\n
+    * exceed mem, set rerange buf_t, (1)copy current to file
+    * later do (1) and reinit (c1)
+*/
+// int
+// http_proc_body(event_t *rev)
+// {
+//     conn_t *c;
+//     req_t *r;
+//     buf_t *b;
+//     int ret;
+//     ssize_t n;
+//     //
+//     c = rev->pdata;
+//     r = c->pdata;
+//     b = r->header_in;
+//     //
+//     for (;;)
+//     {
+//         n = http_read_req(rev);
+//         if (n == NGD_AGAIN)
+//             break;
+
+//         ret = http_parse_body(r, r->header_in);
+//         r->body_received += n;
+//         if (r->body_received > HTTP_MAX_BODY_MEM) {
+
+//             rev->handler = http_proc_body_on_file;
+//             r->header_in->file = 1;
+//             r->flast = 0;
+//             r->fpos = 0;
+//             http_proc_body_on_file(rev);
+//         }
+
+
+//         ret = http_parse_body(r, b);
+//         if (ret == NGD_OK) {
+//             http_proc_switch(rev);
+//         }
+
+//         if (ret == NGD_AGAIN) {
+//             continue;
+//         }
+//     }
+//     /// write job
+//     if (r->body_received > HTTP_MAX_BODY_MEM) {
+
+//     }
+//     if ()
+
+//     return NGD_OK;
+// }
 int
 http_proc_body(event_t *rev)
 {
@@ -209,35 +263,19 @@ http_proc_body(event_t *rev)
         n = http_read_req(rev);
         if (n == NGD_AGAIN)
             break;
-        r->body_received += n;
-        if (r->body_received > HTTP_MAX_BODY_MEM) {
-
-            rev->handler = http_proc_body_on_file;
-            r->header_in->file = 1;
-            r->flast = 0;
-            r->fpos = 0;
-            http_proc_body_on_file(rev);
-        }
-
-
         ret = http_parse_body(r, b);
         if (ret == NGD_OK) {
             http_proc_switch(rev);
+            rev->
         }
 
         if (ret == NGD_AGAIN) {
             continue;
         }
     }
-    /// write job
-    if (r->body_received > HTTP_MAX_BODY_MEM) {
 
-    }
-    if ()
-    //
     return NGD_OK;
 }
-
 int
 http_proc_switch(event_t *rev)
 {
