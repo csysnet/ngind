@@ -45,7 +45,8 @@ typedef struct {
     u_char *end_key;
     u_char *start_value;
     u_char *end_value;
-
+    //
+    unsigned proxy:1;
 } req_t;
 
 //

@@ -24,7 +24,7 @@ list_insert_tail(list_t *l, listnode_t *data)
 }
 //
 int
-listnode_init(listnode_t *node, void *data);
+listnode_init(listnode_t *node, void *data)
 {
     node->data = data;
     node->next = NULL;

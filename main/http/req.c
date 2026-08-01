@@ -157,18 +157,15 @@ http_proc_headers(event_t *rev)
         }
 
         if (rc == HTTP_PARSE_HEADER_DONE) {
-            printf("\n\nreach done\n\n");
+            printf("each ok\n");
             key = pool_alloc(c->pool, sizeof(str_t));
-            // ps(value);
             //
             str_from_chars(key, "Connection");
             value = map_get(r->headers, key);
-            // ps(value);
             //
             str_from_chars(key, "Content-Length");
             value = map_get(r->headers, key);
             if (value) {
-                printf("\n\nreach str_long\n\n");
                 body_len = str_to_long(c->pool, value);
                 r->content_length = body_len;
                 ps(key);
@@ -180,6 +177,7 @@ http_proc_headers(event_t *rev)
                 value = map_get(r->headers, key);
                 r->chunked = 1;
             }
+            fprintf(stderr, "bro\n");
 
             rev->handler = http_proc_body;
             http_proc_body(rev);
@@ -191,60 +189,7 @@ http_proc_headers(event_t *rev)
 
     }
 }
-/*
-    * on small, new body buf
-    * read body until (c1)0\r\n\r\n
-    * exceed mem, set rerange buf_t, (1)copy current to file
-    * later do (1) and reinit (c1)
-*/
-// int
-// http_proc_body(event_t *rev)
-// {
-//     conn_t *c;
-//     req_t *r;
-//     buf_t *b;
-//     int ret;
-//     ssize_t n;
-//     //
-//     c = rev->pdata;
-//     r = c->pdata;
-//     b = r->header_in;
-//     //
-//     for (;;)
-//     {
-//         n = http_read_req(rev);
-//         if (n == NGD_AGAIN)
-//             break;
-
-//         ret = http_parse_body(r, r->header_in);
-//         r->body_received += n;
-//         if (r->body_received > HTTP_MAX_BODY_MEM) {
-
-//             rev->handler = http_proc_body_on_file;
-//             r->header_in->file = 1;
-//             r->flast = 0;
-//             r->fpos = 0;
-//             http_proc_body_on_file(rev);
-//         }
-
-
-//         ret = http_parse_body(r, b);
-//         if (ret == NGD_OK) {
-//             http_proc_switch(rev);
-//         }
-
-//         if (ret == NGD_AGAIN) {
-//             continue;
-//         }
-//     }
-//     /// write job
-//     if (r->body_received > HTTP_MAX_BODY_MEM) {
-
-//     }
-//     if ()
-
-//     return NGD_OK;
-// }
+//
 int
 http_proc_body(event_t *rev)
 {
@@ -261,12 +206,16 @@ http_proc_body(event_t *rev)
     for (;;)
     {
         n = http_read_req(rev);
+        printf("n: %d\n", n);
+        // sleep(1000000);
         if (n == NGD_AGAIN)
             break;
         ret = http_parse_body(r, b);
         if (ret == NGD_OK) {
-            http_proc_switch(rev);
-            rev->
+            rev->handler = http_build_req;
+            http_build_req(rev);
+            printf("reach ok body\n");
+            break;
         }
 
         if (ret == NGD_AGAIN) {
@@ -279,11 +228,29 @@ http_proc_body(event_t *rev)
 int
 http_proc_switch(event_t *rev)
 {
-
+    // printf("%")
+    return NGD_OK;
 }
 
 int
 http_build_req(event_t *wev)
 {
+    conn_t *c;
+    req_t *r;
+    ssize_t n;
+    u_char *res =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 13\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "Hello, world!";
+    //
+    c = wev->pdata;
+    r = c->pdata;
+
+    //
+    n = c->send(c, res, sizeof(res));
+    printf("nsend: %ld\n", n);
 
 }
