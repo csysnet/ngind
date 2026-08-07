@@ -76,14 +76,13 @@ http_read_req(event_t *rev)
     b = r->header_in;
     //
     n = b->last - b->pos;
-    fprintf(stderr, "startokokokkfd: %d\n", c->fd);
+    // fprintf(stderr, "startokokokkfd: %d\n", c->fd);
     if (n > 0){
     // fprintf(stderr, "read shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
         return n;}
     b->pos = b->last;
-    printf("shitdiff: %lu\n", b->end - b->last);
+    // printf("shitdiff: %lu\n", b->end - b->last);
     n = c->recv(c, b->last, b->end - b->last);
-    fprintf(stderr, "endokokokkfd: %d\n", c->fd);
     // printf("n read: %ld\n", n);
     b->last += n;
 
@@ -210,6 +209,7 @@ http_proc_headers(event_t *rev)
             // http_proc_body(rev);
             rev->handler = http_build_req;
             http_build_req(rev);
+            break;
         }
 
 
@@ -276,24 +276,25 @@ http_build_req(event_t *wev)
     //     "Connection: close\r\n"
     //     "\r\n"
     //     "Hello, world!";
-    u_char *res =
+    u_char res[] =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"
-        "Content-Length: 13\r\n"
-        "Connection: close\r\n"
+        "Content-Length: 16\r\n"
+        "Connection: keep-alive\r\n"
         "\r\n"
-        "Hello, world!";
+        "Hello, world!dat";
     //
     c = wev->pdata;
     r = c->pdata;
 
     //
-    n = c->send(c, res, 97);
-    fprintf(stderr, "fd: %d\n", c->fd);
-    printf("nsend: %ld\n", n);
-    perror("send ");
-    // conn_close(c);
+    n = c->send(c, res, sizeof(res) - 1);
+    // fprintf(stderr, "fd: %d\n", c->fd);
+    // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
+    // printf("nsend: %ld\n", n);
+    conn_close(c);
+    perror(RED"send"RESET);
+    // sleep(10);
     //
-    sleep(100000);
-    return 1;
+    return NGD_OK;
 }
