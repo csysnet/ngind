@@ -57,3 +57,8 @@ clcr
 request buffer should remain
 refer include even in header
 just give them a pool, and they dance on
+bread fprintf
+
+char* + 2 != int* + 2
+*(buf+432) = (int *)99;
+u_char *buf

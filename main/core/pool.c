@@ -7,13 +7,12 @@ pool_create_block(pool_t *pool)
 {
     pool_block_t *block;
 
-    block = (pool_block_t *)malloc(BLOCKSIZE);
-
-    block->fail = (int)0;
-    block->used = (size_t)sizeof(pool_block_t);
-    block->last = (u_char *)(block + sizeof(pool_block_t));
-    block->end = (u_char *)(block + BLOCKSIZE);
-    block->next = (pool_block_t *)NULL;
+    block = malloc(BLOCKSIZE);
+    block->fail = 0;
+    block->used = sizeof(pool_block_t);
+    block->last = (u_char *)block + sizeof(pool_block_t);
+    block->end = (u_char *)block + BLOCKSIZE;
+    block->next = NULL;
 
     return block;
 }
@@ -21,6 +20,7 @@ pool_create_block(pool_t *pool)
 static void *
 pool_alloc_block(pool_t *pool, size_t size)
 {
+
     //walk through blocks,
     // if size fit, return p
     // else fail++, if fail > 4, tobusylist
@@ -62,6 +62,8 @@ pool_alloc_block(pool_t *pool, size_t size)
 
     p = cur_blk->last;
     cur_blk->last += size;
+    // fprintf(stderr, RED"reach conbo block: %lu\n"RESET, cur_blk);
+    // fprintf(stderr, RED"reach alloc block: %lu\n"RESET, p);
     return p;
 }
 
@@ -72,13 +74,15 @@ pool_alloc_large(pool_t *pool, size_t size)
     void *p;
 
     l = (pool_large_t *)malloc(sizeof(pool_large_t) + size);
-    p = l + sizeof(pool_large_t);
+    fprintf(stderr, RED"large range: (%p, %p)\n"RESET, (void *)l, (char *)l + sizeof(pool_large_t) + size);
+    p = (u_char *)l + sizeof(pool_large_t);
     if (pool->large_blocks == NULL)
         l->next = NULL;
     else
         l->next = pool->large_blocks;
     pool->large_blocks = l;
 
+    fprintf(stderr, RED"reach alloc large: %p\n"RESET, p);
     return p;
 }
 

@@ -22,7 +22,6 @@ http_parse_reqline(req_t *r, buf_t *b)
     {
         // printf("%d.reach parse\n", i);
         c = *p;
-        printf("%c", c);
         switch (state)
         {
             case ps_start:
@@ -82,9 +81,11 @@ http_parse_header_line(req_t *r, buf_t *b)
     //
     state = r->state;
     //
+    // fprintf(stderr, "start debug\n");
     for (p = b->pos; p < b->last; p++)
     {
         c = *p;
+        // fprintf(stderr, "%c");
         switch (state)
         {
             case ps_start:

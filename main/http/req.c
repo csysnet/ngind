@@ -9,6 +9,8 @@
 #include "conn.h"
 #include "pool.h"
 //
+static int counter;
+
 int
 http_wait_req(event_t *rev)
 {
@@ -21,10 +23,15 @@ http_wait_req(event_t *rev)
     c = rev->pdata;
     //
     b = pool_alloc(c->pool, sizeof(buf_t) + MAX_INBUF);
+    fprintf(stderr, "pool: %p\n", c->pool->blocks);
+    fprintf(stderr, "conn: %p\n", c);
+    fprintf(stderr, "buf: %p\n", b);
+    fprintf(stderr, RED"diff pool & conn: %p\n"RESET, (u_char *)c - (u_char *)b);
+    fprintf(stderr, RED"diff conn & buf: %p\n"RESET, (u_char *)c - (u_char *)b);
     b->start = (u_char *)b + sizeof(buf_t);
     b->pos = b->start;
     b->last = b->start;
-    b->end = b->start + MAX_INBUF;
+    b->end = b->start + sizeof(buf_t) + MAX_INBUF;
     //
     r = pool_alloc(c->pool, sizeof(req_t));
     r->header_in = b;
@@ -56,6 +63,9 @@ http_block_reading(event_t *rev)
 int
 http_read_req(event_t *rev)
 {
+    fprintf(stderr, "count: %d\n", counter);
+    fprintf(stderr, "reqlineoh shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
+    counter++;
     conn_t *c;
     req_t *r;
     buf_t *b;
@@ -66,12 +76,17 @@ http_read_req(event_t *rev)
     b = r->header_in;
     //
     n = b->last - b->pos;
-
-    if (n > 0)
-        return n;
+    fprintf(stderr, "startokokokkfd: %d\n", c->fd);
+    if (n > 0){
+    // fprintf(stderr, "read shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
+        return n;}
+    b->pos = b->last;
+    printf("shitdiff: %lu\n", b->end - b->last);
     n = c->recv(c, b->last, b->end - b->last);
+    fprintf(stderr, "endokokokkfd: %d\n", c->fd);
     // printf("n read: %ld\n", n);
     b->last += n;
+
     return n;
 }
 
@@ -89,11 +104,15 @@ http_proc_reqline(event_t *rev)
     c = rev->pdata;
     r = c->pdata;
     b = r->header_in;
+    counter = 0;
     //
     for (;;)
     {
+    // fprintf(stderr, "startokokokkfd: %d\n", c->fd);
         n = http_read_req(rev);
+    // fprintf(stderr, "endokokokkfd: %d\n", c->fd);
         rc = http_parse_reqline(r, r->header_in);
+
         if (rc == NGD_OK) {
             r->smethod->p = r->start_method;
             r->smethod->len = r->end_method - r->start_method;
@@ -101,6 +120,12 @@ http_proc_reqline(event_t *rev)
             r->suri->len = r->end_uri - r->start_uri;
             r->sver->p = r->start_ver;
             r->sver->len = r->end_ver - r->start_ver;
+            ps(r->smethod);
+            printf(" ");
+            ps(r->suri);
+            printf(" ");
+            ps(r->sver);
+            printf("\n");
             http_proc_headers(rev);
             rev->handler = http_proc_headers;
             break;
@@ -116,7 +141,7 @@ http_proc_reqline(event_t *rev)
 int
 http_proc_headers(event_t *rev)
 {
-
+    fprintf(stderr, "reach proc headers\n");
     conn_t *c;
     req_t *r;
     buf_t *b;
@@ -128,9 +153,11 @@ http_proc_headers(event_t *rev)
     c = rev->pdata;
     r = c->pdata;
     b = r->header_in;
+    fprintf(stderr, "fd: %d\n", c->fd);
+
     //
-    printf("diff: %lu\n", b->last - b->pos);
-    printf("reach proc header\n\n");
+    // printf("diff: %lu\n", b->last - b->pos);
+    // printf("reach proc header\n\n");
     for (;;)
     {
         n = http_read_req(rev);
@@ -179,8 +206,10 @@ http_proc_headers(event_t *rev)
             }
             fprintf(stderr, "bro\n");
 
-            rev->handler = http_proc_body;
-            http_proc_body(rev);
+            // rev->handler = http_proc_body;
+            // http_proc_body(rev);
+            rev->handler = http_build_req;
+            http_build_req(rev);
         }
 
 
@@ -193,6 +222,7 @@ http_proc_headers(event_t *rev)
 int
 http_proc_body(event_t *rev)
 {
+    sleep(100000);
     conn_t *c;
     req_t *r;
     buf_t *b;
@@ -206,7 +236,7 @@ http_proc_body(event_t *rev)
     for (;;)
     {
         n = http_read_req(rev);
-        printf("n: %d\n", n);
+        // printf("n: %d\n", n);
         // sleep(1000000);
         if (n == NGD_AGAIN)
             break;
@@ -235,9 +265,17 @@ http_proc_switch(event_t *rev)
 int
 http_build_req(event_t *wev)
 {
+    fprintf(stderr, "reach build req\n");
     conn_t *c;
     req_t *r;
     ssize_t n;
+    // u_char res[] =
+    //     "HTTP/1.1 200 OK\r\n"
+    //     "Content-Type: text/plain\r\n"
+    //     "Content-Length: 13\r\n"
+    //     "Connection: close\r\n"
+    //     "\r\n"
+    //     "Hello, world!";
     u_char *res =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"
@@ -250,7 +288,12 @@ http_build_req(event_t *wev)
     r = c->pdata;
 
     //
-    n = c->send(c, res, sizeof(res));
+    n = c->send(c, res, 97);
+    fprintf(stderr, "fd: %d\n", c->fd);
     printf("nsend: %ld\n", n);
-
+    perror("send ");
+    // conn_close(c);
+    //
+    sleep(100000);
+    return 1;
 }

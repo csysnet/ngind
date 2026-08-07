@@ -5,7 +5,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 
+#define RED     "\033[31m"
+#define RESET   "\033[0m"
 
 #define NGD_OK 0
 #define NGD_ERR -1

@@ -5,6 +5,7 @@
 #include "conn.h"
 #include "pool.h"
 #include "event.h"
+#include "str.h"
 
 static ssize_t
 unix_send(conn_t *c, u_char *buf, size_t size)
@@ -15,7 +16,21 @@ unix_send(conn_t *c, u_char *buf, size_t size)
 static ssize_t
 unix_recv(conn_t *c, u_char *buf, size_t size)
 {
-    return recv(c->fd, (void *)buf, size, 0);
+    ssize_t n;
+    // str_t s;
+    // s.p = buf;
+    // s.len = size;
+    // printf("\n");
+    //
+    fprintf(stderr, "size: %lu\n", size);
+    fprintf(stderr, RED"start conn->fd: %d\n"RESET, c->fd);
+    n = recv(c->fd, (void *)buf, size, 0);
+    fprintf(stderr, RED"start n: %ld\n"RESET, n);
+    perror("recv");
+    fprintf(stderr, RED"end conn->fd: %d\n"RESET, c->fd);
+    // ps(&s);
+    // sleep(10000);
+    return n;
 }
 
 conn_t *

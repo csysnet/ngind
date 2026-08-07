@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-#define MAX_INBUF 1024
+#define MAX_INBUF 100000
 #define HTTP_MAX_BODY_MEM 1024
 #define HTTP_MAX_BODY (1024 * 1024 * 1024 * 1024)
 #define HTTP_PARSE_HEADER_DONE 1

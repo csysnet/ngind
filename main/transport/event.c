@@ -121,6 +121,7 @@ event_loop(void)
             //
             rev = c->read;
             wev = c->write;
+
             //
             if (evflag & EPOLLIN)
                 rev->handler(rev);
