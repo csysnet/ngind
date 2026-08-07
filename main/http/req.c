@@ -66,6 +66,8 @@ http_read_req(event_t *rev)
     fprintf(stderr, "count: %d\n", counter);
     fprintf(stderr, "reqlineoh shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
     counter++;
+    // if (counter > 4)
+    //     sleep(10);
     conn_t *c;
     req_t *r;
     buf_t *b;
@@ -77,13 +79,15 @@ http_read_req(event_t *rev)
     //
     n = b->last - b->pos;
     // fprintf(stderr, "startokokokkfd: %d\n", c->fd);
-    if (n > 0){
+    if (n > 0)
     // fprintf(stderr, "read shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
-        return n;}
+        return n;
     b->pos = b->last;
     // printf("shitdiff: %lu\n", b->end - b->last);
     n = c->recv(c, b->last, b->end - b->last);
-    // printf("n read: %ld\n", n);
+    fprintf(stderr, RED"n read: %ld\n"RESET, n);
+    if (n < 0)
+        return NGD_AGAIN;
     b->last += n;
 
     return n;
@@ -296,5 +300,6 @@ http_build_req(event_t *wev)
     perror(RED"send"RESET);
     // sleep(10);
     //
+    fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     return NGD_OK;
 }
