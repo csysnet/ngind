@@ -1,5 +1,5 @@
 //
-// #include
+// #include <>
 //
 #include "req.h"
 #include "buf.h"
@@ -303,3 +303,38 @@ http_build_req(event_t *wev)
     fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     return NGD_OK;
 }
+// int
+// http_build_req(event_t *wev)
+// {
+//     fprintf(stderr, "reach build req\n");
+//     conn_t *c;
+//     req_t *r;
+//     ssize_t n;
+//     // u_char res[] =
+//     //     "HTTP/1.1 200 OK\r\n"
+//     //     "Content-Type: text/plain\r\n"
+//     //     "Content-Length: 13\r\n"
+//     //     "Connection: close\r\n"
+//     //     "\r\n"
+//     //     "Hello, world!";
+//     u_char res[] =
+//         "HTTP/1.1 200 OK\r\n"
+//         "Content-Type: text/plain\r\n"
+//         "Content-Length: %lu\r\n"
+//         "Connection: keep-alive\r\n"
+//         "\r\n";
+//     //
+//     c = wev->pdata;
+//     r = c->pdata;
+//     //
+//     n = c->send(c, res, sizeof(res) - 1);
+//     // fprintf(stderr, "fd: %d\n", c->fd);
+//     // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
+//     // printf("nsend: %ld\n", n);
+//     conn_close(c);
+//     perror(RED"send"RESET);
+//     // sleep(10);
+//     //
+//     fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+//     return NGD_OK;
+// }
