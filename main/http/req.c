@@ -63,8 +63,8 @@ http_block_reading(event_t *rev)
 int
 http_read_req(event_t *rev)
 {
-    fprintf(stderr, "count: %d\n", counter);
-    fprintf(stderr, "reqlineoh shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
+    fprintf(stderr, "count: "RED"%d\n"RESET, counter);
+    fprintf(stderr, "fd: %d\n", ((conn_t *)rev->pdata)->fd);
     counter++;
     // if (counter > 4)
     //     sleep(10);
@@ -78,11 +78,13 @@ http_read_req(event_t *rev)
     b = r->header_in;
     //
     n = b->last - b->pos;
-    // fprintf(stderr, "startokokokkfd: %d\n", c->fd);
+    fprintf(stderr, "unread: %ld\n", n);
+    fprintf(stderr, "freespace now: %ld\n", b->end - b->last);
     if (n > 0)
     // fprintf(stderr, "read shitfd: %d\n", ((conn_t *)rev->pdata)->fd);
         return n;
     b->pos = b->last;
+    if (b->end - b->last == 0) return NGD_AGAIN;
     // printf("shitdiff: %lu\n", b->end - b->last);
     n = c->recv(c, b->last, b->end - b->last);
     fprintf(stderr, RED"n read: %ld\n"RESET, n);
@@ -209,10 +211,13 @@ http_proc_headers(event_t *rev)
             }
             fprintf(stderr, "bro\n");
 
-            // rev->handler = http_proc_body;
-            // http_proc_body(rev);
             rev->handler = http_build_req;
             http_build_req(rev);
+            // r->body_received = 0;
+            // r->header_in->pos = r->header_in->start;
+            // r->header_in->last = r->header_in->start;
+            // rev->handler = http_proc_body;
+            // http_proc_body(rev);
             break;
         }
 
@@ -223,10 +228,46 @@ http_proc_headers(event_t *rev)
     }
 }
 //
+// int
+// http_proc_body(event_t *rev)
+// {   //guarantee content_length
+//     conn_t *c;
+//     req_t *r;
+//     buf_t *b;
+//     int ret;
+//     ssize_t n;
+//     //
+//     c = rev->pdata;
+//     r = c->pdata;
+//     b = r->header_in;
+//     //
+//     for (;;)
+//     {
+//         n = http_read_req(rev);
+//         // printf("n: %d\n", n);
+//         // sleep(1000000);
+//         if (n == NGD_AGAIN)
+//             break;
+//         ret = http_parse_body(r, b);
+//         if (ret == NGD_OK) {
+//             rev->handler = http_build_req;
+//             http_build_req(rev);
+//             printf("reach ok body\n");
+//             break;
+//         }
+
+//         if (ret == NGD_AGAIN) {
+//             continue;
+//         }
+//     }
+
+//     return NGD_OK;
+//
+//
 int
 http_proc_body(event_t *rev)
-{
-    sleep(100000);
+{   //guarantee content_length
+    fprintf(stderr, RED"reach proc body\n"RESET);
     conn_t *c;
     req_t *r;
     buf_t *b;
@@ -239,26 +280,35 @@ http_proc_body(event_t *rev)
     //
     for (;;)
     {
+        fprintf(stderr, RED"con-len: %lu\n"RESET, r->content_length);
         n = http_read_req(rev);
         // printf("n: %d\n", n);
         // sleep(1000000);
         if (n == NGD_AGAIN)
-            break;
-        ret = http_parse_body(r, b);
-        if (ret == NGD_OK) {
+        {
+            if (b->end - b->last == 0) {
+                fprintf(stderr, RED"reach reset when %lu\n"RESET, r->body_received);
+                b->pos = b->start;
+                b->last = b->start;
+            } else {
+                break;
+            }
+        }
+        r->body_received += n;
+        b->pos += n;
+        fprintf(stderr, "is this step pos==last: %lu\n",b->last - b->pos);
+        if (r->body_received == r->content_length) {
+            fprintf(stderr, "reach ok body second\n");
             rev->handler = http_build_req;
             http_build_req(rev);
-            printf("reach ok body\n");
             break;
         }
-
-        if (ret == NGD_AGAIN) {
-            continue;
-        }
+        fprintf(stderr, RED"received: %lu\n"RESET, r->body_received);
     }
 
     return NGD_OK;
 }
+//
 int
 http_proc_switch(event_t *rev)
 {
@@ -290,13 +340,13 @@ http_build_req(event_t *wev)
     //
     c = wev->pdata;
     r = c->pdata;
-
     //
     n = c->send(c, res, sizeof(res) - 1);
     // fprintf(stderr, "fd: %d\n", c->fd);
     // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
     // printf("nsend: %ld\n", n);
     conn_close(c);
+    fprintf(stderr, RED"reach build well\n");
     perror(RED"send"RESET);
     // sleep(10);
     //

@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-#define MAX_INBUF 100000
+#define MAX_INBUF 4096
 #define HTTP_MAX_BODY_MEM 1024
 #define HTTP_MAX_BODY (1024 * 1024 * 1024 * 1024)
 #define HTTP_PARSE_HEADER_DONE 1
@@ -23,10 +23,10 @@ typedef struct {
     //headers
     buf_t *header_in;
     map_t *headers;
-    long content_length;
+    size_t content_length;
     //body
-    unsigned chunked;
     size_t body_received;
+    unsigned chunked;
     size_t chunk_size;
     u_char *start_chunk;
     u_char *end_chunk;

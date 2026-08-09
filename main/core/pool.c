@@ -137,20 +137,31 @@ pool_calloc(pool_t *pool, size_t size)
 void
 pool_destroy(pool_t *pool)
 {
-
+    fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     pool_block_t *blk, *next_blk;
     pool_large_t *large_blk, *next_large_blk;
 
     if (pool == NULL) return;
 
     blk = pool->blocks;
-    while (blk) { next_blk = blk->next; free(blk); blk = next_blk; }
+    while (blk) { next_blk = blk->next;
+        fprintf(stderr, "blk-freeing: %p\n", blk);
+        free(blk); blk = next_blk; }
 
     blk = pool->busy_blocks;
-    while (blk) { next_blk = blk->next; free(blk); blk = next_blk; }
+    while (blk) { next_blk = blk->next;
+        fprintf(stderr, "busy-blk-freeing: %p\n", blk); free(blk);
+        blk = next_blk; }
 
     large_blk = pool->large_blocks;
-    while (large_blk) { next_large_blk = large_blk->next; free(large_blk); large_blk = next_large_blk; }
+    while (large_blk) {
+        next_large_blk = large_blk->next;
+        fprintf(stderr, "large-freeing: %p\n", large_blk);
+        free(large_blk);
+        fprintf(stderr, "large-freeing succeed: %p\n", large_blk);
+        large_blk = next_large_blk;
+    }
 
+    fprintf(stderr, RED"large"RESET" succeed!\n");
     free(pool);
 }
