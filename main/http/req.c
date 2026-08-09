@@ -291,7 +291,8 @@ http_proc_body(event_t *rev)
                 b->pos = b->start;
                 b->last = b->start;
             } else {
-                break;
+
+            break;
             }
         }
         r->body_received += n;
