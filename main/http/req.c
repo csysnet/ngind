@@ -8,6 +8,9 @@
 #include "event.h"
 #include "conn.h"
 #include "pool.h"
+#include "fcntl.h"
+#include "string.h"
+#include <sys/stat.h>
 //
 static int counter;
 
@@ -31,7 +34,7 @@ http_wait_req(event_t *rev)
     b->start = (u_char *)b + sizeof(buf_t);
     b->pos = b->start;
     b->last = b->start;
-    b->end = b->start + sizeof(buf_t) + MAX_INBUF;
+    b->end = b->start + MAX_INBUF;
     //
     r = pool_alloc(c->pool, sizeof(req_t));
     r->header_in = b;
@@ -43,6 +46,8 @@ http_wait_req(event_t *rev)
     //
     c->pdata = r;
     //
+    // rev->handler = http_build_req;
+    // http_build_req(rev);
     rev->handler = http_proc_reqline;
     http_proc_reqline(rev);
     //
@@ -131,8 +136,10 @@ http_proc_reqline(event_t *rev)
             printf(" ");
             ps(r->sver);
             printf("\n");
-            http_proc_headers(rev);
+            // rev->handler = http_build_req;
+            // http_build_req(rev);
             rev->handler = http_proc_headers;
+            http_proc_headers(rev);
             break;
         }
 
@@ -211,13 +218,13 @@ http_proc_headers(event_t *rev)
             }
             fprintf(stderr, "bro\n");
 
-            rev->handler = http_build_req;
-            http_build_req(rev);
-            // r->body_received = 0;
+            // rev->handler = http_build_req;
+            // http_build_req(rev);
+            r->body_received = 0;
             // r->header_in->pos = r->header_in->start;
             // r->header_in->last = r->header_in->start;
-            // rev->handler = http_proc_body;
-            // http_proc_body(rev);
+            rev->handler = http_proc_body;
+            http_proc_body(rev);
             break;
         }
 
@@ -317,43 +324,6 @@ http_proc_switch(event_t *rev)
     return NGD_OK;
 }
 
-int
-http_build_req(event_t *wev)
-{
-    fprintf(stderr, "reach build req\n");
-    conn_t *c;
-    req_t *r;
-    ssize_t n;
-    // u_char res[] =
-    //     "HTTP/1.1 200 OK\r\n"
-    //     "Content-Type: text/plain\r\n"
-    //     "Content-Length: 13\r\n"
-    //     "Connection: close\r\n"
-    //     "\r\n"
-    //     "Hello, world!";
-    u_char res[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 16\r\n"
-        "Connection: keep-alive\r\n"
-        "\r\n"
-        "Hello, world!dat";
-    //
-    c = wev->pdata;
-    r = c->pdata;
-    //
-    n = c->send(c, res, sizeof(res) - 1);
-    // fprintf(stderr, "fd: %d\n", c->fd);
-    // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
-    // printf("nsend: %ld\n", n);
-    conn_close(c);
-    fprintf(stderr, RED"reach build well\n");
-    perror(RED"send"RESET);
-    // sleep(10);
-    //
-    fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    return NGD_OK;
-}
 // int
 // http_build_req(event_t *wev)
 // {
@@ -371,9 +341,10 @@ http_build_req(event_t *wev)
 //     u_char res[] =
 //         "HTTP/1.1 200 OK\r\n"
 //         "Content-Type: text/plain\r\n"
-//         "Content-Length: %lu\r\n"
+//         "Content-Length: 16\r\n"
 //         "Connection: keep-alive\r\n"
-//         "\r\n";
+//         "\r\n"
+//         "Hello, world!dat";
 //     //
 //     c = wev->pdata;
 //     r = c->pdata;
@@ -383,9 +354,50 @@ http_build_req(event_t *wev)
 //     // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
 //     // printf("nsend: %ld\n", n);
 //     conn_close(c);
+//     fprintf(stderr, RED"reach build well\n");
 //     perror(RED"send"RESET);
 //     // sleep(10);
 //     //
 //     fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 //     return NGD_OK;
 // }
+int
+http_build_req(event_t *wev)
+{
+    fprintf(stderr, "reach build req\n");
+    conn_t *c;
+    req_t *r;
+    ssize_t n;
+    int fd;
+    ssize_t fd_len;
+    char buf[1024 * 10];
+    struct stat st;
+    //
+    u_char res[] =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html\r\n"
+        "Content-Length: %lu\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n";
+    //
+    fstat(fd, &st);
+    fd_len = st.st_size;
+    snprintf(buf, sizeof(buf), res, r->content_length);
+    fd = open("www/index.html", O_RDONLY);
+    fprintf(stderr, RED"reach build req\n"RESET);
+    fprintf(stderr, "fd_len: %ld\n", fd_len);
+    n = read(fd, buf + strlen(buf), fd_len);
+    c = wev->pdata;
+    r = c->pdata;
+    //
+    n = c->send(c, buf, strlen(buf) + n);
+    // fprintf(stderr, "fd: %d\n", c->fd);
+    // n = c->send(c, res + sizeof(res) - 1 - 10, 10);
+    // printf("nsend: %ld\n", n);
+    conn_close(c);
+    perror(RED"send"RESET);
+    // sleep(10);
+    //
+    // fprintf(stderr, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    return NGD_OK;
+}

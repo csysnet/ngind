@@ -158,6 +158,7 @@ pool_destroy(pool_t *pool)
         next_large_blk = large_blk->next;
         fprintf(stderr, "large-freeing: %p\n", large_blk);
         free(large_blk);
+        perror("free");
         fprintf(stderr, "large-freeing succeed: %p\n", large_blk);
         large_blk = next_large_blk;
     }

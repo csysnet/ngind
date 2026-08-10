@@ -59,6 +59,7 @@ conn_close(conn_t *c)
 {
     close(c->fd);
     pool_destroy(c->pool);
+
     return NGD_OK;
 }
 
