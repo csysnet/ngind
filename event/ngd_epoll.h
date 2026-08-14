@@ -13,6 +13,8 @@ int ngd_epoll_regis(fd, interest_flag);
 int ngd_epoll_unregis(...);
 int ngd_epoll_loop(...);
 
+void ngd_epoll_module_init(void);
+int ngd_epoll_add(int fd, 
 
 int process_events_and_timers(events...)
 {
