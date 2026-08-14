@@ -1,33 +1,18 @@
 #ifndef NGD_EPOLL_H
 #define NGD_EPOLL_H
 //
-#define NGD_EPOLL_READ
-#define NGD_EPOLL_WRITE
-#define NGD_EPOLL_HUP
-#define NGD_EPOLL_MAXEVENTS 1024
+#define NGD_EPOLL_MAXEVENTS 1024 //size of ready array
 //
-static int epfd;
-static struct epoll_event[NGD_EPOLL_MAXEVENTS]
+#define NGD_EPOLL_READ 0x01
+#define NGD_EPOLL_WRITE 0x02
 //
-int ngd_epoll_regis(fd, interest_flag);
-int ngd_epoll_unregis(...);
-int ngd_epoll_loop(...);
-
 void ngd_epoll_module_init(void);
-int ngd_epoll_add(int fd, uint8_t interest_flag);
-int ngd_epoll_mod(int fd, uint8_t interest_flag);
+int ngd_epoll_add(int fd, void *data, uint32_t interest_flag);
+int ngd_epoll_mod(int fd, void *data, uint32_t interest_flag);
 int ngd_epoll_del(int fd);
-//
 int ngd_epoll_wait(int timeout);
-int ngd_epoll_get_ctx
-
-int process_events_and_timers(events...)
-{
-    for (;;)
-    {
-
-        int n = process_events()
-    }
-}
+//get context from ready array
+void *ngd_epoll_get_data(int index);
+uint32_t ngd_epoll_get_actual_flag(int index);
 //
 #end
