@@ -14,7 +14,12 @@ int ngd_epoll_unregis(...);
 int ngd_epoll_loop(...);
 
 void ngd_epoll_module_init(void);
-int ngd_epoll_add(int fd, 
+int ngd_epoll_add(int fd, uint8_t interest_flag);
+int ngd_epoll_mod(int fd, uint8_t interest_flag);
+int ngd_epoll_del(int fd);
+//
+int ngd_epoll_wait(int timeout);
+int ngd_epoll_get_ctx
 
 int process_events_and_timers(events...)
 {
