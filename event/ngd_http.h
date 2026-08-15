@@ -47,13 +47,24 @@ struct ngd_parser_reqline {
     u_char *start_ver;
     u_char *end_ver;
 }
-
+int
+ngd_parser_reqline {
+    ngd_parser_reqline *parser,
+    ngd_buf_t *b,
+    int *state
+}
+{
+    
+}
 struct ngd_parser_headerline {
     u_char *key_start;
     u_char *key_end;
     u_char *value_start;
     u_char *value_end;
 }
+
+int 
+p
 //
 struct ngd_req_t {
     ngd_str_t *smethod, *suri, *sver;
@@ -132,6 +143,9 @@ ngd_http_handle(ngd_conn_t *c)
 
     // if (c->on_timeout) ..
 }
+
+
+
 ngd_http_handle_read(ngd_http_t *http)
 {
     enum {
