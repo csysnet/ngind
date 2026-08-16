@@ -15,6 +15,53 @@
 typedef struct ngd_http_t ngd_http_t;
 typedef struct ngd_req_t ngd_req_t;
 //
+int ngd_http_proc_reqline(ngd_http_t *http);
+int ngd_http_proc_headers(ngd_http_t *http);
+int ngd_http_proc_body(ngd_http_t *http);
+int ngd_http_build_resp(ngd_http_t *http);
+int ngd_http_compress_resp(ngd_http_t *http);
+int ngd_http_send_resp(ngd_http_t *http);
+//
+int
+ngd_http_proc_reqline(ngd_http_t *http)
+{
+
+
+
+
+    enum {
+        ps_start=0,
+        ps_method,
+        ps_space_uri,
+        ps_uri,
+        ps_space_ver,
+        ps_ver
+    } state;
+    u_char *p;
+    buf_t *b;
+    int state;
+    //
+    state = http->req->state;
+    b = http->inbuf;
+    //
+    for (p = b->pos; p < b->last; p++)
+    {
+        switch (state)
+        {
+            case ps_start:
+                r->method_start = p;
+                state = ps_method;
+                break;
+            case ps_method:
+                if (*p = ' ') {
+                    r->end_method = p;
+                    state =
+                }
+            case ps_;
+        }
+    }
+}
+//
 struct ngd_http_t {
     ngd_conn_t *conn;
     ngd_req_t *req;
@@ -181,7 +228,7 @@ ngd_http_handle(ngd_conn_t *c)
         {
 
             case proc_reqline:
-                ret = ngd_http_proc_reqline(ngd_req_t *r);
+                ret = ngd_http_proc_reqline(ngd_http_t *http);
                 if (ret == NGD_OK) {
                     r.smethod.data = r.method_start;
                     r.smethod.len = r.method_end - r.method_start;
