@@ -1,5 +1,16 @@
 #ifndef NGD_HTTP_CONN_H
 #define NGD_HTTP_CONN_H
+//contansts
+#define NGD_HTTP_FULL_HEADER_DONE 1
+#define NGD_HTTP_FULL_CHUNK_DONE 2
+//methods
+#define NGD_HTTP_GET 1
+#define NGD_HTTP_POST 2
+#define NGD_HTTP_OPTIONS 3
+#define NGD_HTTP_HEAD 4
+#define NGD_HTTP_PUT 5
+#define NGD_HTTP_PATCH 6
+#define NGD_HTTP_DELETE 7
 //
 typedef struct ngd_http_t ngd_http_t;
 typedef struct ngd_req_t ngd_req_t;
@@ -8,15 +19,19 @@ struct ngd_http_t {
     ngd_conn_t *conn;
     ngd_req_t *req;
     int state;
+    int errno;
     //
+    pool_t *pool;
     ngd_buf_t *inbuf;
     ngd_buf_t *outbuf;
+    //parsed info
+    llist_t *headers;
+    str_t
     //
 };
 struct ngd_req_t {
     int state;
     //request line
-    int method;
     str_t *smethod;
     str_t *suri;
     str_t *sver;
@@ -54,7 +69,7 @@ ngd_parser_reqline {
     int *state
 }
 {
-    
+
 }
 struct ngd_parser_headerline {
     u_char *key_start;
@@ -63,7 +78,7 @@ struct ngd_parser_headerline {
     u_char *value_end;
 }
 
-int 
+int
 p
 //
 struct ngd_req_t {
@@ -74,6 +89,75 @@ struct ngd_req_t {
 }
 //
 
+// ngd_http_handle(ngd_conn_t *c)
+// {
+//     ngd_http_t *http;
+//     enum {
+//         proc_reqline,
+//         proc_headers,
+//         proc_body,
+//         proc_build_res,
+//         proc_compress_res,
+//         proc_send_response
+//     } state;
+//     int ret;
+//     ssize_t n;
+//     //
+//     http = c->data;
+//     state = http->state;
+//     //
+//     for (;;)
+//     {
+//         switch (state)
+//         {
+
+//             case proc_reqline:
+//                 ret = ngd_http_proc_reqline(ngd_req_t *r);
+//                 if (ret == NGD_OK) {
+//                     state = proc_headers;
+//                     break;
+//                 }
+//                 if (ret == NGD_AGAIN) {
+//                     ...
+//                 }
+//                 if (ret == NGD_ERR) {
+//                     ...
+//                 }
+//                 break;
+//             case proc_headers:
+//                 ngd_http_proc_headers(ngd_http_t *http);
+//                 if (ret == NGD_OK) {
+//                     state = proc_h
+//                 }
+//                 if (ret == NGD_AGAIN) {
+//                     ...
+//                 }
+//                 if (ret == NGD_ERR) {
+//                     ...
+//                 }
+//                 break;
+//             case proc_body:
+//                 ngd_http_proc_body(ngd_http_t *http);
+//                 break;
+//             case proc_build_resp:
+//                 ngd_proc_build_resp(ngd_http_t *http);
+//                 break;
+//             case proc_compress_resp:
+//                 ngd_proc_compress_resp(ngd_http_t *http);
+//                 break;
+//             case proc_send_resp:
+//                 ngd_proc_send_resp(ngd_http_t *http);
+//                 break;
+//         }
+//     }
+
+
+
+//     if (c->on_read) read();
+//     if (c->on_write) ..
+
+//     // if (c->on_timeout) ..
+// }
 ngd_http_handle(ngd_conn_t *c)
 {
     ngd_http_t *http;
@@ -99,6 +183,12 @@ ngd_http_handle(ngd_conn_t *c)
             case proc_reqline:
                 ret = ngd_http_proc_reqline(ngd_req_t *r);
                 if (ret == NGD_OK) {
+                    r.smethod.data = r.method_start;
+                    r.smethod.len = r.method_end - r.method_start;
+                    r.suri.data = r.uri_start;
+                    r.suri.len = r.uri_end - r.uri_start;
+                    r.sver.data = r.ver_start;
+                    r.sver.len = r.ver_end - r.ver_start;
                     state = proc_headers;
                     break;
                 }
@@ -112,6 +202,7 @@ ngd_http_handle(ngd_conn_t *c)
             case proc_headers:
                 ngd_http_proc_headers(ngd_http_t *http);
                 if (ret == NGD_OK) {
+                    r.suri.len =
                     state = proc_h
                 }
                 if (ret == NGD_AGAIN) {
@@ -143,7 +234,6 @@ ngd_http_handle(ngd_conn_t *c)
 
     // if (c->on_timeout) ..
 }
-
 
 
 ngd_http_handle_read(ngd_http_t *http)
