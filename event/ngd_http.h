@@ -235,6 +235,7 @@ ngd_http_handle(ngd_conn_t *c)
     // if (c->on_timeout) ..
 }
 
+online http using http param
 
 ngd_http_handle_read(ngd_http_t *http)
 {
