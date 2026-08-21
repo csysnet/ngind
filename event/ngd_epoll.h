@@ -1,10 +1,13 @@
 #ifndef NGD_EPOLL_H
 #define NGD_EPOLL_H
 //
+#include "sys/epoll.h"
+//
 #define NGD_EPOLL_MAXEVENTS 1024 //size of ready array
 //
-#define NGD_EPOLL_READ 0x01
-#define NGD_EPOLL_WRITE 0x02
+#define NGD_READABLE EPOLLIN
+#define NGD_WRITABLE EPOLLOUT
+#define NGD_HUP EPOLLHUP
 //
 void ngd_epoll_module_init(void);
 int ngd_epoll_add(int fd, void *data, uint32_t interest_flag);
