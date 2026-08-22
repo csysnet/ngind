@@ -1,20 +1,69 @@
-#include "ngd_event.h"
-// ngd_event_is(evflags, interest_flag) -> evflags & NGD_EVENT_READ
-// ngd_event_is(evflags, interest_flag) -> evflags & interest_flag
-//
-#define NGD_EVENT_READ 0x01
-#define NGD_EVENT_WRITE 0X02
-//
-struct ngd_event_t {
-    int fd;
-    uint8_t ready;
-    void *data;
-    int (*handler)(ngd_event_t *ev);
-};
+#include <sys/epoll.h>
+#include "ngd_transport.h"
 //
 static int epfd;
-static struct epoll_event events[NGD_EVENT_MAX];
+static struct epoll_event events[NGD_TRANSPORT_EVENT_MAX_GET];
 //
-
-
-int ngd_event_
+static int
+ngd_event_set(ngd_conn_t *c, int op, int evflags)
+{
+    struct epoll_event ee;
+    //
+    ee.events = evflag;
+    ee.data.ptr = c;
+    epoll_ctl(epfd, op, c->fd, &ee);
+    //
+    return NGD_OK;
+}
+//
+int
+ngd_event_module_init(void)
+{
+    epfd = epoll_create1(0);
+    return NGD_OK;
+}
+int
+ngd_event_regis(ngd_conn_t *c)
+{
+    ngd_event_set(c, EPOLL_CTL_ADD, EPOLLIN);
+    return NGD_OK;
+}
+int
+ngd_event_unregis(ngd_conn_t *c)
+{
+    ngd_event_set(c, EPOLL_CTL_DEL, 0);
+    return NGD_OK;
+}
+int
+ngd_event_enable_write(ngd_conn_t *c)
+{
+    ngd_event_set(c, EPOLL_CTL_ADD, EPOLLIN | EPOLLOUT);
+    return NGD_OK;
+}
+int
+ngd_event_disable_write(ngd_conn_t *c)
+{
+    ngd_event_set(c, EPOLL_CTL_ADD, EPOLLIN);
+    return NGD_OK;
+}
+int
+ngd_event_loop(int timeout)
+{
+    int n;
+    //
+    n = epoll_wait(epfd, events, sizeof(events), timeout);
+    //
+    for (int i=0; i<n; i++)
+    {
+        evflags = events[i].events;
+        c = events[i].data.ptr;
+        //
+        if (evflags & EPOLLIN)
+            c->on_read = true;
+        if (evflags & EPOLLOUT)
+            c->on_write = true;
+        c->handler(c);
+    }
+    //
+    return NGD_OK;
+}

@@ -64,6 +64,7 @@ ngd_http_proc_reqline(ngd_http_t *http)
 }
 //
 struct ngd_http_t {
+    ngd_pool_t *pool;
     ngd_conn_t *conn;
     ngd_req_t *req;
     int state;
