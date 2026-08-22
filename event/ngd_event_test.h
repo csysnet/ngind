@@ -6,9 +6,7 @@
 #define NGD_EVENT_MAX 1024
 #define NGD_EVENT_WAIT_TIME -1
 //
-typedef struct ngd_event_t ngd_event_t;
-struct event_t {
-
+typedef struct {
 }
 //
 int ngd_event_module_init(void);

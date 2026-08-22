@@ -29,6 +29,5 @@ for (;;)
     for (int i=0; i<n; i++)
     {
         conn_t *c = epoll_events[i].data.ptr;
-
     }
 }
