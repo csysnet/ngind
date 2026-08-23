@@ -62,3 +62,4 @@ bread fprintf
 char* + 2 != int* + 2
 *(buf+432) = (int *)99;
 u_char *buf
+general rule: ps_start =0

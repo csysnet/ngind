@@ -13,7 +13,7 @@
 #define NGD_OK 0
 #define NGD_ERR -1
 #define NGD_AGAIN -2
-
+#define NGD_STATE_START 0
 typedef unsigned char u_char;
 
 

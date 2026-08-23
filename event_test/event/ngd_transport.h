@@ -42,6 +42,8 @@ int ngd_event_enable_write(ngd_conn_t *c);
 int ngd_event_disable_write(ngd_conn_t *c);
 int ngd_event_loop(int timeout);
 //transport
-int ngd_transport_module_init(void);
+// void ngd_timer_module_init(void);
+// int ngd_event_module_init(void);
+// void ngd_conn_module_init(void);
 //
 #endif
