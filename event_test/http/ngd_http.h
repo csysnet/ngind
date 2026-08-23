@@ -14,7 +14,6 @@
 #define NGD_HTTP_DELETE 7
 //
 typedef struct ngd_http_t ngd_http_t;
-typedef struct ngd_req_t ngd_req_t;
 // struct
 struct ngd_http_t {
     int state;
@@ -54,9 +53,9 @@ int ngd_http_start(void);
 int ngd_http_init_conn(ngd_conn_t *c);
 int ngd_http_handle_conn(ngd_conn_t *c);
 // http
-int ngd_http_proc_reqline(ngd_http_t *http);
-int ngd_http_proc_headers(ngd_http_t *http);
-int ngd_http_proc_body(ngd_http_t *http);
+int ngd_http_handle_reqline(ngd_http_t *http);
+int ngd_http_handle_headers(ngd_http_t *http);
+int ngd_http_handle_body(ngd_http_t *http);
 int ngd_http_build_resp(ngd_http_t *http);
 int ngd_http_compress_resp(ngd_http_t *http);
 int ngd_http_send_resp(ngd_http_t *http);
