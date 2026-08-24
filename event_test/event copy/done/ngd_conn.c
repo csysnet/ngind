@@ -67,6 +67,17 @@ listener_init(void (*init_conn)(ngd_conn_t *))
                     &listener);
 }
 //
+struct ngd_conn_t {
+    int fd;
+    int state;
+    ngd_timer_t timer;
+    ngd_event_t event;
+    void (*handler)(ngd_conn_t *);
+    void *data;
+    bool on_read;
+    bool on_write;
+    bool on_timeout;
+};
 static ngd_conn_t *
 ngd_conn_get()
 {
@@ -183,3 +194,45 @@ ngd_conn_reset_timeout(ngd_conn_t *c, uint64_t timer_ms)
     ngd_timer_reset(&c->timer, timer_ms);
 }
 //
+ssize_t
+ngd_conn_send(ngd_conn_t *c, u_char *buf, size_t len)
+{
+    return send(c->fd, (void *)buf, size, 0);
+}
+ssize_t
+ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len)
+{
+    return recv(c->fd, (void *)buf, size, 0);
+}
+//
+int
+ngd_conn_get_state(ngd_conn_t *c)
+{
+    return c->state;
+}
+void
+ngd_conn_set_state(ngd_conn_t *c, int state)
+{
+    c->state = state;
+}
+void *
+ngd_conn_get_data(ngd_conn_t *c)
+{
+    return c->data;
+}
+//
+bool
+ngd_conn_is_read(ngd_conn_t *c)
+{
+    return c->on_read;
+}
+bool
+ngd_conn_is_write(ngd_conn_t *c)
+{
+    return c->on_write;
+}
+bool
+ngd_conn_is_timeout(ngd_conn_t *c)
+{
+    return c->on_timeout;
+}

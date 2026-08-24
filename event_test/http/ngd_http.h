@@ -2,19 +2,14 @@
 #ifndef NGD_HTTP_CONN_H
 #define NGD_HTTP_CONN_H
 //contansts
+
 #define NGD_HTTP_FULL_HEADER_DONE 1
 #define NGD_HTTP_FULL_CHUNK_DONE 2
 #define NGD_HTTP_INVALID
 //HTTP CODE
+#define NGD_HTTP_OK 200
+#define NGD_HTTP_BAD_REQUEST 400
 //
-//methods
-#define NGD_HTTP_GET 1
-#define NGD_HTTP_POST 2
-#define NGD_HTTP_OPTIONS 3
-#define NGD_HTTP_HEAD 4
-#define NGD_HTTP_PUT 5
-#define NGD_HTTP_PATCH 6
-#define NGD_HTTP_DELETE 7
 //
 typedef struct ngd_http_t ngd_http_t;
 // struct
@@ -51,10 +46,9 @@ struct ngd_http_t {
     u_char *chunk_end;
 };
 // connection
-int ngd_http_module_init(void);
-int ngd_http_start(void);
 int ngd_http_init_conn(ngd_conn_t *c);
 int ngd_http_handle_conn(ngd_conn_t *c);
+int ngd_http_close_conn(ngd_conn_t *c);
 // http
 int ngd_http_handle_reqline(ngd_http_t *http);
 int ngd_http_handle_headers(ngd_http_t *http);
@@ -62,4 +56,5 @@ int ngd_http_handle_body(ngd_http_t *http);
 int ngd_http_build_resp(ngd_http_t *http);
 int ngd_http_compress_resp(ngd_http_t *http);
 int ngd_http_send_resp(ngd_http_t *http);
+//
 #endif
