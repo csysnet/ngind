@@ -5,6 +5,8 @@
 #include "ngd_event.h"
 #include "ngd_timer.h"
 //
+#define NGD_CONN_SET(c, fd, handler, data)
+//
 typedef struct ngd_conn_t ngd_conn_t;
 //
 struct ngd_conn_t {
@@ -26,6 +28,6 @@ ngd_conn_t *ngd_conn_create(int fd);
 void ngd_conn_close(ngd_conn_t *c);
 void ngd_conn_enable_write(ngd_conn_t *c);
 void ngd_conn_disable_write(ngd_conn_t *c);
-void ngd_conn_reset_timeout(ngd_conn_t *c);
+void ngd_conn_reset_timeout(ngd_conn_t *c, uint64_t timer_ms);
 //
 #endif NGD_CONN_H
