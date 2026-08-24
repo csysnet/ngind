@@ -67,3 +67,5 @@ next time uint8_t
 init follow ngd_state_start but every func responser for set start again when they done
 explain why we use p < b->last
 TRAVEL REDUNDANT ret err
+data first then handler
+maby receive not return actual error

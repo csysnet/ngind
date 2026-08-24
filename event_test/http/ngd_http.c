@@ -1,206 +1,29 @@
-//
 int
-ngd_http_proc_reqline(ngd_http_t *http)
-{
-
-
-
-
-    enum {
-        ps_start=0,
-        ps_method,
-        ps_space_uri,
-        ps_uri,
-        ps_space_ver,
-        ps_ver
-    } state;
-    u_char *p;
-    buf_t *b;
-    int state;
-    //
-    state = http->req->state;
-    b = http->inbuf;
-    //
-    for (p = b->pos; p < b->last; p++)
-    {
-        switch (state)
-        {
-            case ps_start:
-                r->method_start = p;
-                state = ps_method;
-                break;
-            case ps_method:
-                if (*p = ' ') {
-                    r->end_method = p;
-                    state =
-                }
-            case ps_;
-        }
-    }
-}
-//
-struct ngd_http_t {
-    ngd_pool_t *pool;
-    ngd_conn_t *conn;
-    ngd_req_t *req;
-    int state;
-    int errno;
-    //
-    pool_t *pool;
-    ngd_buf_t *inbuf;
-    ngd_buf_t *outbuf;
-    //parsed info
-    llist_t *headers;
-    str_t
-    //
-};
-struct ngd_req_t {
-    int state;
-    //request line
-    str_t *smethod;
-    str_t *suri;
-    str_t *sver;
-    u_char *method_start;
-    u_char *method_end;
-    u_char *uri_start;
-    u_char *uri_end;
-    u_char *ver_start;
-    u_char *ver_end;
-    //header
-    u_char *key_start;
-    u_char *key_end;
-    u_char *value_start;
-    u_char *value_end;
-    //body
-    size_t content_length;
-    size_t body_received;
-    bool on_chunk;
-    size_t chunk_size;
-    u_char *chunk_start;
-    u_char *chunk_end;
-}
-struct ngd_parser_reqline {
-    u_char *start_method;
-    u_char *end_method;
-    u_char *start_uri;
-    u_char *end_uri;
-    u_char *start_ver;
-    u_char *end_ver;
-}
-int
-ngd_parser_reqline {
-    ngd_parser_reqline *parser,
-    ngd_buf_t *b,
-    int *state
-}
-{
-
-}
-struct ngd_parser_headerline {
-    u_char *key_start;
-    u_char *key_end;
-    u_char *value_start;
-    u_char *value_end;
-}
-
-int
-p
-//
-struct ngd_req_t {
-    ngd_str_t *smethod, *suri, *sver;
-    buf_t *in;
-    size_t content_length;
-    //
-}
-//
-
-// ngd_http_handle(ngd_conn_t *c)
-// {
-//     ngd_http_t *http;
-//     enum {
-//         proc_reqline,
-//         proc_headers,
-//         proc_body,
-//         proc_build_res,
-//         proc_compress_res,
-//         proc_send_response
-//     } state;
-//     int ret;
-//     ssize_t n;
-//     //
-//     http = c->data;
-//     state = http->state;
-//     //
-//     for (;;)
-//     {
-//         switch (state)
-//         {
-
-//             case proc_reqline:
-//                 ret = ngd_http_proc_reqline(ngd_req_t *r);
-//                 if (ret == NGD_OK) {
-//                     state = proc_headers;
-//                     break;
-//                 }
-//                 if (ret == NGD_AGAIN) {
-//                     ...
-//                 }
-//                 if (ret == NGD_ERR) {
-//                     ...
-//                 }
-//                 break;
-//             case proc_headers:
-//                 ngd_http_proc_headers(ngd_http_t *http);
-//                 if (ret == NGD_OK) {
-//                     state = proc_h
-//                 }
-//                 if (ret == NGD_AGAIN) {
-//                     ...
-//                 }
-//                 if (ret == NGD_ERR) {
-//                     ...
-//                 }
-//                 break;
-//             case proc_body:
-//                 ngd_http_proc_body(ngd_http_t *http);
-//                 break;
-//             case proc_build_resp:
-//                 ngd_proc_build_resp(ngd_http_t *http);
-//                 break;
-//             case proc_compress_resp:
-//                 ngd_proc_compress_resp(ngd_http_t *http);
-//                 break;
-//             case proc_send_resp:
-//                 ngd_proc_send_resp(ngd_http_t *http);
-//                 break;
-//         }
-//     }
-
-
-
-//     if (c->on_read) read();
-//     if (c->on_write) ..
-
-//     // if (c->on_timeout) ..
-// }
-//
-void
 ngd_http_init_conn(ngd_conn_t *c)
 {
+    ngd_pool_t *pool;
     ngd_http_t *http;
     //
-    c->handler = ngd_http_handle_conn;
-    c->data = pool_alloc(c->pool, sizeof(ngd_http_t));
-    ngd_timer_module_add(c, 60000)// 60s
+    pool = ngd_pool_create();
     //
-
+    http = pool_alloc(pool, sizeof(ngd_http_t));
+    http->pool = pool;
+    http->state = NGD_STATE_START;
+    //
+    ngd_conn_init(c,
+                  NGD_STATE_START,
+                  ngd_http_handle_conn,
+                  (void *)http,
+                  60000);//60s
+    //
+    return NGD_OK;
 }
 //
-
 int
 ngd_http_handle_conn(ngd_conn_t *c)
 {
     enum {
+        ps_start=NGD_STATE_START,
         ps_reqline,
         ps_headers,
         ps_body,
@@ -218,188 +41,210 @@ ngd_http_handle_conn(ngd_conn_t *c)
     {
         switch (state)
         {
+            case ps_start:
+                http->state = NGD_STATE_START;
+                state = ps_reqline;
+                break;
             case ps_reqline:
+                ret = ngd_http_handle_reqline(http);
+                if (ret == NGD_OK) {
+                    http->smethod.data = http->method_start;
+                    http->smethod.len = http->method_end - http->method_start;
+                    http->suri.data = http->uri_start;
+                    http->suri.len = http->uri_end - http->uri_start;
+                    http->sver.data = http->ver_start;
+                    http->sver.len = http->ver_end - http->ver_start;
+                    state = ps_headers;
+                }
+                if (ret == NGD_AGAIN) {
+
+                }
+
+                if (ret == NGD_ERR) {
+
+                }
                 break;
             case ps_headers:
+                ret = ngd_http_handle_headers(http);
+                if (ret == NGD_OK) {
+                }
+                if (ret == NGD_AGAIN) {
+
+                }
+                if (ret == NGD_ERR) {
+
+                }
                 break;
             case ps_body:
+                ret = ngd_http_handle_body(http);
                 break;
             case ps_build_resp:
+                ret = ngd_http_build_resp(http);
                 break;
             case ps_compress_resp:
+                ret = ngd_http_compress_resp(http);
                 break;
             case ps_send_resp:
+                ret = ngd_http_send_resp(http);
                 break;
         }
     }
+
     //
-    return ;
+    return NGD_OK;
 }
 
 int
-ngd_http_handle_request(ngd_http_t *http)
+ngd_http_handle_reqline(ngd_http_t *http)
 {
     enum {
-        ps_reqline,
-        ps_headers,
-        ps_body,
-        ps_build_resp,
-        ps_compress_resp,
-        ps_send_resp
+        ps_start=NGD_STATE_START,
+        ps_method,
+        ps_space_uri,
+        ps_uri,
+        ps_space_ver,
+        ps_ver
     } state;
+    ngd_buf_t *b;
+    u_char *p;
     int ret;
     ssize_t n;
     //
     state = http->state;
+    b = http->inbuf;
     //
-    for (;;)
+    for (p = b->pos; p < b->last; p++)
     {
         switch (state)
         {
-            ps_reqline:
-
+            case ps_start:
+                http->method_start = p;
                 break;
-            ps_headers: break;
-            ps_body: break;
-            ps_build_resp: break;
-            ps_compress_resp: break;
-            ps_send_resp: break;
-
+            case ps_method:
+                if (*p == ' ') {
+                    http->method_end = p;
+                    state = ps_space_uri;
+                }
+                break;
+            case ps_space_uri:
+                http->uri_start = p;
+                state = ps_uri;
+                break;
+            case ps_uri:
+                if (*p == ' ') {
+                    http->uri_end = p;
+                    state = ps_space_ver;
+                }
+                break;
+            case ps_space_ver:
+                http->ver_start = p;
+                state = ps_ver;
+                break;
+            case ps_ver:
+                if (c == '\n') {
+                    http->ver_end = p - 1;
+                    goto done;
+                }
+                break;
         }
     }
+    b->pos = b->last;
+    http->state = state;
+    return NGD_AGAIN;
+done:
+    b->pos = p + 1;
+    http->state = ps_start;
+    return NGD_OK;
 }
-
-
-
-ngd_http_handle(ngd_conn_t *c)
+//
+int
+ngd_http_handle_headers(ngd_http_t *http)
 {
-    ngd_http_t *http;
     enum {
-        proc_reqline,
-        proc_headers,
-        proc_body,
-        proc_build_res,
-        proc_compress_res,
-        proc_send_response
+        ps_start=NGD_STATE_START,
+        ps_key,
+        ps_space_value,
+        ps_value
     } state;
+    ngd_buf_t *b;
+    u_char *p;
     int ret;
     ssize_t n;
     //
-    http = c->state;
     state = http->state;
+    b = http->inbuf;
     //
     for (;;)
     {
         switch (state)
         {
-
-            case proc_reqline:
-                ret = ngd_http_proc_reqline(ngd_http_t *http);
-                if (ret == NGD_OK) {
-                    r.smethod.data = r.method_start;
-                    r.smethod.len = r.method_end - r.method_start;
-                    r.suri.data = r.uri_start;
-                    r.suri.len = r.uri_end - r.uri_start;
-                    r.sver.data = r.ver_start;
-                    r.sver.len = r.ver_end - r.ver_start;
-                    state = proc_headers;
+            case ps_start:
+                if (*p == '\r')
                     break;
-                }
-                if (ret == NGD_AGAIN) {
-                    ...
-                }
-                if (ret == NGD_ERR) {
-                    ...
+                if (*p == '\n')
+                    goto header_done;
+                http->key_start = p;
+                state = ps_key;
+                break;
+            case ps_key:
+                if (*p == ' ') {
+                    http->key_end = p - 1;
+                    state = ps_space_value;
                 }
                 break;
-            case proc_headers:
-                ngd_http_proc_headers(ngd_http_t *http);
-                if (ret == NGD_OK) {
-                    r.suri.len =
-                    state = proc_h
+            case ps_space_value:
+                http->value_start = p;
+                state = ps_value;
+                break;
+            case ps_value:
+                if (*p == '\n') {
+                    http->value_end = p - 1;
+                    goto done;
                 }
-                if (ret == NGD_AGAIN) {
-                    ...
-                }
-                if (ret == NGD_ERR) {
-                    ...
-                }
-                break;
-            case proc_body:
-                ngd_http_proc_body(ngd_http_t *http);
-                break;
-            case proc_build_resp:
-                ngd_proc_build_resp(ngd_http_t *http);
-                break;
-            case proc_compress_resp:
-                ngd_proc_compress_resp(ngd_http_t *http);
-                break;
-            case proc_send_resp:
-                ngd_proc_send_resp(ngd_http_t *http);
                 break;
         }
     }
-
-
-
-    if (c->on_read) read();
-    if (c->on_write) ..
-
-    // if (c->on_timeout) ..
+    //
+    b->pos = b->last;
+    http->state = state;
+    return NGD_AGAIN;
+done:
+    b->pos = p + 1;
+    http->state = ps_start;
+    return NGD_OK;
+header_done:
+    b->pos = p + 1;
+    http->state = ps_start;
+    return NGD_HTTP_FULL_HEADER_DONE;
 }
-
-online http using http param
-
-ngd_http_handle_read(ngd_http_t *http)
+int
+ngd_http_handle_body(ngd_http_t *http)
 {
     enum {
-        proc_reqline,
-        proc_headers,
-        proc_body,
-        proc_build_response,
-        proc_compress_response,
-        proc_send_response
+        ps_start=NGD_STATE_START,
+        ps_zero,
+        ps_zero_cr,
+        ps_zero_cr_lf,
+        ps_zero_cr_lf_cr,
     } state;
+    ngd_buf_t *b;
+    u_char *p;
+    int ret;
+    ssize_t n;
     //
     state = http->state;
+    b = http->inbuf;
     //
-    switch ()
+    for (p = b->pos; p < b->last; p++)
     {
-        case proc_reqline: break;
-        case proc_headers: break;
-        case proc_body: break;
+        switch (state)
+        {
+            case ps_start:
+                if (*p == '0')
+                    state = ps_
+        }
     }
-    http->state;
-    //
-
 }
-
-ngd_http_handle_write(ngd_http_t *http)
-{
-    enum {
-        proc_build_response,
-        proc_compress_response,
-        proc_send_response
-    } state;
-    //
-    state = http->state;
-    //
-    switch (state)
-    {
-        case proc_build_response: break;
-        case proc_compress_response: break;
-        case proc_send_response:break;
-        //
-        case proc_ : break;
-
-    }
-    .. = state;
-
-}
-
-#endif
-enum {
-    ps_conn_recving,
-    ps_conn_sending,
-    ps_conn_keep_alive,
-} state;
+int ngd_http_build_resp(ngd_http_t *http);
+int ngd_http_compress_resp(ngd_http_t *http);
+int ngd_http_send_resp(ngd_http_t *http);

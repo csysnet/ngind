@@ -4,6 +4,9 @@
 //contansts
 #define NGD_HTTP_FULL_HEADER_DONE 1
 #define NGD_HTTP_FULL_CHUNK_DONE 2
+#define NGD_HTTP_INVALID
+//HTTP CODE
+//
 //methods
 #define NGD_HTTP_GET 1
 #define NGD_HTTP_POST 2

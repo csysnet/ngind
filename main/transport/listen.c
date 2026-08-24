@@ -26,7 +26,7 @@ listen_init(listen_t *ls)
     bind(ls->fd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
     //
     listen(ls->fd, BACKLOG);
-
+    //
     return NGD_OK;
 }
 
