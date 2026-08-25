@@ -8,9 +8,13 @@ ngd_http_init_conn(ngd_conn_t *c)
     //
     pool = ngd_pool_create();
     //
-    http = pool_alloc(pool, sizeof(ngd_http_t));
+    http = ngd_pool_alloc(pool, sizeof(ngd_http_t));
     http->pool = pool;
     http->state = NGD_STATE_START;
+    //
+    ngd_buf_init(&http->inbuf,
+                 pool_alloc(http->pool, NGD_HTTP_INBUF_SMALL),
+                 NGD_HTTP_INBUF_SMALL);
     //
     ngd_conn_init(c,
                   NGD_STATE_START,
@@ -36,12 +40,24 @@ ngd_http_handle_conn(ngd_conn_t *c)
     ngd_http_t *http;
     int ret;
     ssize_t n;
+    void *data;
     //
     state = ngd_conn_get_state(c);
     http = ngd_conn_get_data(c);
+    ret = NGD_AGAIN;
     //
     for (;;)
     {
+        if (ret == NGD_AGAIN) {
+            if (buf->last == buf->end) {
+                data = ngd_pool_alloc(http->pool, NGD_)
+                ngd_buf_init
+                pool_alloc(1024)
+                ngd_str_cpy(b->pos, b->last - b->pos, )
+            } else {
+
+            }
+        }
         switch (state)
         {
             case ps_start:

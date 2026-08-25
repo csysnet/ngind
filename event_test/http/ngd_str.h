@@ -13,9 +13,10 @@ struct ngd_str_t {
     size_t len;
 };
 //
-int str_cmp(str_t *s1, str_t *s2);
-void str_zeros(void *data, size_t len);
-ngd_str_print(ngd_str_t *s);
+void ngd_str_cpy(void *src, size_t src_len, void *dest, size_t *dest_len);
+bool ngd_str_equal(str_t *s1, str_t *s2);
+void ngd_str_zeros(void *data, size_t len);
+void ngd_str_print(ngd_str_t *s);
 //
 //
 #endif
