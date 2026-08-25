@@ -2,7 +2,7 @@
 #ifndef NGD_HTTP_CONN_H
 #define NGD_HTTP_CONN_H
 //contansts
-
+#define NGD_HTTP_BUCKET_COUNT 10
 #define NGD_HTTP_FULL_HEADER_DONE 1
 #define NGD_HTTP_FULL_CHUNK_DONE 2
 #define NGD_HTTP_INVALID

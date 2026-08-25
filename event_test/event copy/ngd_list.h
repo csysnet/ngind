@@ -11,7 +11,7 @@ struct ngd_list_t {
     ngd_pool_t *pool;
 };
 //
-void ngd_list_push(ngd_list_t *l);
-
+void ngd_list_init(ngd_list_t *l, ngd_pool_t *pool);
+void ngd_list_push(ngd_list_t *l, void *data)
 
 #endif
