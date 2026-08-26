@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <errno.h>
 //
 #include "ngd_conn.h"
 //
@@ -41,7 +42,7 @@ listener_handle_event(ngd_event_t *ev)
     return NGD_OK;
 }
 static void
-listener_init(void (*init_conn)(ngd_conn_t *))
+listener_init(int port, int backlog, void (*init_conn)(ngd_conn_t *))
 {
     struct sockaddr_in addr;
     int opt;
@@ -54,12 +55,12 @@ listener_init(void (*init_conn)(ngd_conn_t *))
     str_zeros((void *)&addr, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(NGD_CONN_LISTEN_PORT);
+    addr.sin_port = htons(port);
     bind(listener->fd,
         (struct sockaddr *)&addr,
         sizeof(addr));
     //
-    listen(listener->fd, NGD_CONN_LISTEN_BACKLOG);
+    listen(listener->fd, backlog);
     //
     ngd_event_regis(listener->event,
                     listener->fd,
@@ -69,7 +70,6 @@ listener_init(void (*init_conn)(ngd_conn_t *))
 //
 struct ngd_conn_t {
     int fd;
-    int state;
     ngd_timer_t timer;
     ngd_event_t event;
     void (*handler)(ngd_conn_t *);
@@ -118,12 +118,12 @@ ngd_conn_handle_timeout(ngd_timer_t *tmr)
     return NGD_OK;
 }
 //
-void ngd_conn_module_init(void (*init_conn)(ngd_conn_t *))
+void ngd_conn_module_init(int port, int backlog, bool on_tls, void (*init_conn)(ngd_conn_t *))
 {
     ngd_event_module_init();
     ngd_timer_module_init();
     //
-    listener_init(init_conn);
+    listener_init(port, backlog, init_conn);
 }
 void
 ngd_conn_module_start(void)
@@ -194,27 +194,36 @@ ngd_conn_reset_timeout(ngd_conn_t *c, uint64_t timer_ms)
     ngd_timer_reset(&c->timer, timer_ms);
 }
 //
-ssize_t
-ngd_conn_send(ngd_conn_t *c, u_char *buf, size_t len)
+int
+ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_recved)
+{
+    ssize_t n;
+    //
+    for (;;)
+    {
+        n = recv(c, (void *)buf, len);
+        //
+        if (n > 0) {
+            *(bytes_recved) = n;
+            return NGD_OK;
+        } else if (n == 0) {
+            return NGD_ERR;
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return NGD_AGAIN;
+            if (errno == EINTR)
+                continue;
+        }
+        break;
+    }
+    return NGD_ERR;
+}
+int
+ngd_conn_send(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_sent)
 {
     return send(c->fd, (void *)buf, size, 0);
 }
-ssize_t
-ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len)
-{
-    return recv(c->fd, (void *)buf, size, 0);
-}
 //
-int
-ngd_conn_get_state(ngd_conn_t *c)
-{
-    return c->state;
-}
-void
-ngd_conn_set_state(ngd_conn_t *c, int state)
-{
-    c->state = state;
-}
 void *
 ngd_conn_get_data(ngd_conn_t *c)
 {

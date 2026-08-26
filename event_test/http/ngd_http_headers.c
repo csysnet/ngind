@@ -1,7 +1,7 @@
 #include "ngd_http.h"
 //
 int
-ngd_http_handle_headers(ngd_http_t *http)
+ngd_http_parse_headers(ngd_http_t *http)
 {
     enum {
         ps_start=NGD_STATE_START,
@@ -14,7 +14,7 @@ ngd_http_handle_headers(ngd_http_t *http)
     int ret;
     ssize_t n;
     //
-    state = http->state;
+    state = http->state_parse;
     b = http->inbuf;
     //
     for (;;)

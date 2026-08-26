@@ -11,13 +11,13 @@ ngd_http_init_conn(ngd_conn_t *c)
     http = ngd_pool_alloc(pool, sizeof(ngd_http_t));
     http->pool = pool;
     http->state = NGD_STATE_START;
+    http->state_parse = NGD_STATE_START;
     //
     ngd_buf_init(&http->inbuf,
                  pool_alloc(http->pool, NGD_HTTP_INBUF_SMALL),
                  NGD_HTTP_INBUF_SMALL);
     //
     ngd_conn_init(c,
-                  NGD_STATE_START,
                   ngd_http_handle_conn,
                   (void *)http,
                   60000);//60s
@@ -39,10 +39,10 @@ ngd_http_handle_conn(ngd_conn_t *c)
     } state;
     ngd_http_t *http;
     int ret;
-    ssize_t n;
+    size_t n;
     void *data;
     //
-    state = ngd_conn_get_state(c);
+    state = http->state;
     http = ngd_conn_get_data(c);
     ret = NGD_AGAIN;
     //
@@ -51,11 +51,26 @@ ngd_http_handle_conn(ngd_conn_t *c)
         if (ret == NGD_AGAIN) {
             if (buf->last == buf->end) {
                 data = ngd_pool_alloc(http->pool, NGD_)
-                ngd_buf_init
+
                 pool_alloc(1024)
                 ngd_str_cpy(b->pos, b->last - b->pos, )
             } else {
+                n = b->last - b->pos;
+                if (n == 0) {
+                    n = c->recv(c, b->last, b->end - b->last);
 
+                }
+                ret = ngd_conn_recv(c, b->last, b->end - b->last, &n);
+                if (ret == NGD_OK) {
+                    b->pos = b->last;
+                    b->last += b->end - b->last;
+                }
+                if (ret == NGD_AGAIN) {
+                    b->last += n;
+                }
+                if (ret == NGD_ERR) {
+                    ngd_http_close_conn(c);
+                }
             }
         }
         switch (state)
