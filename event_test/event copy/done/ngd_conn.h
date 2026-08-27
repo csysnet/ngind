@@ -24,8 +24,8 @@ int ngd_conn_send(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_sent);
 //
 void *ngd_conn_get_data(ngd_conn_t *c);
 //
-bool ngd_conn_is_read(ngd_conn_t *c);
-bool ngd_conn_is_write(ngd_conn_t *c);
-bool ngd_conn_is_timeout(ngd_conn_t *c);
+bool ngd_conn_on_read(ngd_conn_t *c);
+bool ngd_conn_on_write(ngd_conn_t *c);
+bool ngd_conn_on_timeout(ngd_conn_t *c);
 //
 #endif NGD_CONN_H

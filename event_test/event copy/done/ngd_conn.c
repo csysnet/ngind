@@ -264,17 +264,17 @@ ngd_conn_get_data(ngd_conn_t *c)
 }
 //
 bool
-ngd_conn_is_read(ngd_conn_t *c)
+ngd_conn_on_read(ngd_conn_t *c)
 {
     return c->on_read;
 }
 bool
-ngd_conn_is_write(ngd_conn_t *c)
+ngd_conn_on_write(ngd_conn_t *c)
 {
     return c->on_write;
 }
 bool
-ngd_conn_is_timeout(ngd_conn_t *c)
+ngd_conn_on_timeout(ngd_conn_t *c)
 {
     return c->on_timeout;
 }

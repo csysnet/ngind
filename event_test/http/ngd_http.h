@@ -1,6 +1,12 @@
 //one http struct, please
 #ifndef NGD_HTTP_CONN_H
 #define NGD_HTTP_CONN_H
+//limits
+#define NGD_HTTP_LIMIT_REQUEST 1024 * 16
+#define NGD_HTTP_LIMIT_REQLINE 1024 *
+#define NGD_HTTP_LIMIT_HEADER_LINE 1024
+#define NGD_HTTP_LIMIT_HEADERS 1024
+#define NGD_HTTP_LIMIT_BODY 1024 *
 //contansts
 #define NGD_HTTP_INBUF_SMALL 1024
 #define NGD_HTTP_INBUF_MEDIUM 8192
@@ -16,18 +22,17 @@
 //
 //
 typedef struct ngd_http_t ngd_http_t;
+typedef struct ngd_http_header_t ngd_http_t;
 // struct
 struct ngd_http_t {
     int state;
     int state_parse;
     ngd_pool_t *pool;
-    ngd_conn_t *conn;
     //
     ngd_buf_t *inbuf;
-    size_t bytes_recved_total;
-    size_t bytes_recved_each;
+    size_t recved_total;
+    size_t recved_each;
     ngd_buf_t *outbuf;
-    ngd_map_t *headers;
     //parse stuff
     //request line
     str_t *smethod;
@@ -40,6 +45,8 @@ struct ngd_http_t {
     u_char *ver_start;
     u_char *ver_end;
     //header
+    ngd_list_t *headers;
+    str_t *
     u_char *key_start;
     u_char *key_end;
     u_char *value_start;
@@ -54,8 +61,11 @@ struct ngd_http_t {
 };
 // connection
 int ngd_http_init_conn(ngd_conn_t *c);
-int ngd_http_handle_conn(ngd_conn_t *c);
 int ngd_http_close_conn(ngd_conn_t *c);
+int ngd_http_handle_conn(ngd_conn_t *c);
+int ngd_http_handle_conn_read(ngd_conn_t *c);
+int ngd_http_handle_conn_write(ngd_conn_t *c);
+int ngd_http_read_request(ngd_http_t *c);
 // http
 int ngd_http_parse_reqline(ngd_http_t *http); //(until pos == last) -> undone -> again
 int ngd_http_parse_headers(ngd_http_t *http); //(pos <= last) -> done -> ok

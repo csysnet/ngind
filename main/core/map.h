@@ -24,6 +24,6 @@ typedef struct map_t {
 
 int map_init(map_t *map, pool_t *parent_pool);
 int map_insert(map_t *map, str_t *key, void *value);
-void *map_get(map_t *map, str_t *key);
+void *map_find(map_t *map, str_t key);
 
 #endif
