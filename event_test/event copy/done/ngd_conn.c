@@ -194,6 +194,11 @@ ngd_conn_reset_timeout(ngd_conn_t *c, uint64_t timer_ms)
     ngd_timer_reset(&c->timer, timer_ms);
 }
 //
+/*
+ * ok-> consume what recved, might st read later
+ again-> wait
+ err->close
+ */
 int
 ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_recved)
 {
@@ -201,7 +206,7 @@ ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_recved)
     //
     for (;;)
     {
-        n = recv(c, (void *)buf, len);
+        n = recv(c, (void *)buf, len, 0);
         //
         if (n > 0) {
             *(bytes_recved) = n;
@@ -214,14 +219,42 @@ ngd_conn_recv(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_recved)
             if (errno == EINTR)
                 continue;
         }
+        //
         break;
     }
+    //
     return NGD_ERR;
 }
+/*
+ * ok-> consume what recved, might st write later
+ again-> wait
+ err->close
+ */
 int
 ngd_conn_send(ngd_conn_t *c, u_char *buf, size_t len, size_t *bytes_sent)
 {
-    return send(c->fd, (void *)buf, size, 0);
+    ssize_t n;
+    //
+    for (;;)
+    {
+        n = send(c, buf, len, 0);
+        //
+        if (n > 0) {
+            *(bytes_sent) = n;
+            return NGD_OK;
+        } else if (n == 0) {
+            return NGD_ERR;
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                return NGD_AGAIN;
+            if (errno == EINTR)
+                continue;
+        }
+        //
+        break;
+    }
+    //
+    return NGD_ERR;
 }
 //
 void *

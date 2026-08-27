@@ -24,6 +24,8 @@ struct ngd_http_t {
     ngd_conn_t *conn;
     //
     ngd_buf_t *inbuf;
+    size_t bytes_recved_total;
+    size_t bytes_recved_each;
     ngd_buf_t *outbuf;
     ngd_map_t *headers;
     //parse stuff
@@ -98,3 +100,8 @@ if (request_recv > max_request_limit) {
          close
     }
 }
+i
+case 1:
+
+
+recv()
