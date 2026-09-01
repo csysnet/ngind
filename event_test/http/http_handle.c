@@ -50,6 +50,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
         ps_reqline,
         ps_headers,
         ps_body,
+        ps_body_chunk,
+        ps_body_len,
         ps_build_resp,
         ps_compress_resp,
         ps_send_resp,
@@ -57,6 +59,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
     int ret;
     ngd_buf_t *b;
     size_t n;
+    ngd_http_header_t *header;
+    ngd_str_t *key;
     //
     http = ngd_conn_get_data(c);
     state = http->state;
@@ -138,30 +142,96 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 }
                 break;
             case ps_headers:
-                ret = ngd_http_handle_headers(http);
-                str = pool_alloc()
-                if (ret == NGD_OK) {
-                    str->data = http->key_start;
-                    str->len = http->key_end - key_start;
-                    ret = ngd_list_append(http->headers, str);
-                    if (ret == NGD_ERR)
-                        ngd_http_close_conn();
-                        return;
-
-                }
-                if (ret == NGD_HTTP_FULL_HEADER_DONE) {
-
-                }
                 if (ret == NGD_AGAIN) {
 
+                }
+
+                if (ret == NGD_OK) {
+                    header = pool_alloc(http->pool, sizeof(*header));
+                    header->key.data = http->key_start;
+                    header->key.len = http->key_end - http->key_start;
+                    header->value.data = http->value_start;
+                    header->value.len = http->value_end - http->value_start;
+                    ngd_list_append(http->headers, (void *)header);
+                }
+                if (ret == NGD_HTTP_FULL_HEADER_DONE) {
+                    for (ngd_list_node_t *node = http->headers.head;
+                                          node != NULL;
+                                          node->next;)
+                    {
+                        header = node->data;
+                        if (ngd_str_iequal(header->key, NGD_STR_C("Content-Length"))) {
+                            ret = ngd_str_to_size(header->key, &http->content_length);
+                            if (ret == NGD_ERR)
+                                ngd_http_close_conn(http);
+                        }
+
+                        if (ngd_str_iequal(header->key ,NGD_STR_C("Transfer-Encoding"))) {
+                            if (ngd_str_iequal(header->value, NGD_STR_C("chunked"))) {
+                                http->on_chunked = true;
+                            }
+                        }
+
+                        if (ngd_str_iequal(header->key ,NGD_STR_C("Connection"))) {
+                            if (ngd_str_iequal(header->value, NGD_STR_C("keep-alive"))) {
+                                http->on_keep_alive = true;
+                            }
+                        }
+
+                        if (ngd_str_iequal(header->key ,NGD_STR_C("Accept-Encoding"))) {
+                            if (ngd_str_isin(NGD_STR_C("gzip"), header->value, false)) {
+                                http->on_gzip = true;
+                            } else {
+                                http->on_gzip = false;
+                            }
+                        }
+                        state = ps_body;
+                        continue;
+                    }
                 }
                 if (ret == NGD_ERR) {
 
                 }
                 break;
             case ps_body:
-                ret = ngd_http_handle_body(http);
+                if (http->on_chunk)
+                    state = ps_body_chunk;
+                else {
+                    state = ps_body_len;
+                    if (http->content_length > NGD_HTTP_LIMIT_BODY) {
+                        ngd_http_close_conn(http);
+                        return;
+                    }
+                }
                 break;
+            case ps_body_chunk:
+                ret = ngd_http_parse_chunk(http);
+                if (ret == NGD_OK) {
+                    state = ps_build_resp;
+                }
+                break;
+            case ps_body_len:
+                if (http->recved_each <= http->content_length) {
+                    for (;;)
+                    {
+                        ret = ngd_http_read_request(http);
+                        if (ret == NGD_AGAIN)
+                            return;
+                        if (ret == NGD_ERR)
+                            ngd_http_close_conn(http);
+
+                    }
+                    //read request full;
+                    //save to temp file
+                    //read request full
+                    //save to temp file
+                }
+                //
+                ret = ngd_http_read_request(http);
+                if (ret == NGD_AGAIN) {
+                    return;
+                }
+
             case ps_build_resp:
                 ret = ngd_http_build_resp(http);
                 break;
@@ -171,10 +241,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
             case ps_send_resp:
                 ret = ngd_http_send_resp(http);
                 break;
-        }
-
-        if (ret == NGD_ERR) {
-            ngd_http_close_conn(http);
         }
     }
 

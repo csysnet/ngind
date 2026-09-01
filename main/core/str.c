@@ -26,6 +26,28 @@ str_zeros(u_char *pdata, size_t len)
 }
 
 int
+ngd_str_to_size(str_t *s, size_t *size)
+{
+    size_t n = 0;
+    char c;
+
+    for (size_t i = 0; i < s->len; i++)
+    {
+        c = s->data[i];
+        if (c < '0' || c > '9')
+            return NGD_ERR;
+
+        if (n > (SIZE_MAX - (c - '0')) / 10)
+            return NGD_ERR;
+
+        n = n * 10 + (c - '0');
+        s++;
+    }
+    *size = n;
+    return NGD_OK;
+}
+
+int
 str_to_long(pool_t *pool, str_t *s)
 {
     char *chars;

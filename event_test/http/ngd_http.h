@@ -11,18 +11,21 @@
 #define NGD_HTTP_INBUF_MEDIUM (1024 * 8) //8kb
 #define NGD_HTTP_INBUF_LARGE (1024 * 16) //16kb
 //
-#define NGD_HTTP_BUCKET_COUNT 10
 #define NGD_HTTP_FULL_HEADER_DONE 1
 #define NGD_HTTP_FULL_CHUNK_DONE 2
-#define NGD_HTTP_INVALID
+#define NGD_HTTP_INVALID_REQUEST 3
 //HTTP CODE
 #define NGD_HTTP_OK 200
 #define NGD_HTTP_BAD_REQUEST 400
 //
 //
 typedef struct ngd_http_t ngd_http_t;
-typedef struct ngd_http_header_t ngd_http_t;
+typedef struct ngd_http_header_t ngd_http_header_t;
 // struct
+struct ngd_http_header_t {
+    str_t key;
+    str_t value;
+};
 struct ngd_http_t {
     int state;
     ngd_pool_t *pool;
@@ -43,13 +46,17 @@ struct ngd_http_t {
     u_char *ver_start;
     u_char *ver_end;
     //header
-    ngd_list_t *headers;
+
+    ngd_list_t headers;
     u_char *key_start;
     u_char *key_end;
+    str_t *mimes;
     u_char *value_start;
     u_char *value_end;
-    //body
     size_t content_length;
+    bool on_zlib;
+    bool on_keep_alive;
+    //body
     bool on_chunk;
     size_t chunk_size;
     size_t chunk_recved;
