@@ -2,14 +2,14 @@
 #ifndef NGD_HTTP_CONN_H
 #define NGD_HTTP_CONN_H
 //limits
-#define NGD_HTTP_LIMIT_REQLINE 1024 *
-#define NGD_HTTP_LIMIT_HEADER_LINE 1024
-#define NGD_HTTP_LIMIT_HEADERS 1024
-#define NGD_HTTP_LIMIT_BODY 1024 *
+#define NGD_HTTP_LIMIT_REQLINE (1024 * 8) //8kb
+#define NGD_HTTP_LIMIT_HEADER_LINE (1024 * 8) //8kb
+#define NGD_HTTP_LIMIT_HEADERS (1024 * 32) //16kb
+#define NGD_HTTP_LIMIT_BODY (1024 * 1024) //1mb
 //contansts
-#define NGD_HTTP_INBUF_SMALL 1024
-#define NGD_HTTP_INBUF_MEDIUM 8192
-#define NGD_HTTP_INBUF_LARGE 16384
+#define NGD_HTTP_INBUF_SMALL 1024 //1kb
+#define NGD_HTTP_INBUF_MEDIUM (1024 * 8) //8kb
+#define NGD_HTTP_INBUF_LARGE (1024 * 16) //16kb
 //
 #define NGD_HTTP_BUCKET_COUNT 10
 #define NGD_HTTP_FULL_HEADER_DONE 1
@@ -25,14 +25,13 @@ typedef struct ngd_http_header_t ngd_http_t;
 // struct
 struct ngd_http_t {
     int state;
-    int state_parse;
     ngd_pool_t *pool;
     //
     ngd_buf_t *inbuf;
-    size_t recved_total;
     size_t recved_each;
     ngd_buf_t *outbuf;
     //parse stuff
+    int state_parse;
     //request line
     str_t *smethod;
     str_t *suri;
@@ -45,21 +44,20 @@ struct ngd_http_t {
     u_char *ver_end;
     //header
     ngd_list_t *headers;
-    str_t *
     u_char *key_start;
     u_char *key_end;
     u_char *value_start;
     u_char *value_end;
     //body
     size_t content_length;
-    size_t body_received;
     bool on_chunk;
     size_t chunk_size;
+    size_t chunk_recved;
     u_char *chunk_start;
     u_char *chunk_end;
 };
 // connection
-int ngd_http_init_conn(ngd_conn_t *c);
+void ngd_http_init_conn(ngd_conn_t *c);
 int ngd_http_close_conn(ngd_conn_t *c);
 int ngd_http_handle_conn(ngd_conn_t *c);
 int ngd_http_handle_conn_read(ngd_conn_t *c);

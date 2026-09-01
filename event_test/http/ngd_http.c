@@ -12,15 +12,18 @@ ngd_http_read_request(ngd_http_t *c)
     http = c->data;
     b = http->inbuf;
     if (b->last == b->end) {
-        alloc larger
-        if (http->bytes_recved == NGD_HTTP_INBUF_SMALL) {
-            p = pool_alloc(http->pool, NGD_HTTP_INBUF_MEDIUM);
-            ngd_str_cpy(b->pos, b->last - b->pos, p, NGD_HTTP_INBUF_MEDIUM);
-            ngd_buf_init(b, p, NGD_HTTP_INBUF_MEDIUM)
-        } else if (http->bytes_recved == NGD_HTTP_INBUF_MEDIUM) {
-            copy avaible space, alloc equal large
-        } else if (http->bytes_recved == NGD_HTTP_INBUF_LARGE)
-            return NGD_ERR;
+        if (!max_mode) {
+            alloc larger
+            if (http->bytes_recved == NGD_HTTP_INBUF_SMALL) {
+                p = pool_alloc(http->pool, NGD_HTTP_INBUF_MEDIUM);
+                ngd_str_cpy(b->pos, b->last - b->pos, p, NGD_HTTP_INBUF_MEDIUM);
+                ngd_buf_init(b, p, NGD_HTTP_INBUF_MEDIUM)
+            } else if (http->bytes_recved == NGD_HTTP_INBUF_MEDIUM) {
+                copy avaible space, alloc equal large
+            } else if (http->bytes_recved == NGD_HTTP_INBUF_LARGE)
+
+                return NGD_ERR;
+        }
     }
     else {
         ret = ngd_conn_recv(c, b->last, b->end - b->last, &bytes_recved);
