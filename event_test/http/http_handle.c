@@ -41,6 +41,44 @@ ngd_http_read_request(ngd_http_t *c)
 }
 
 
+if (ret == NGD_AGAIN) {
+    if (b->last == b->end) {
+        n = b->last - b->pos;
+        switch (b->end - b->start) {
+            case NGD_HTTP_INBUF_SMALL:
+                p = pool_alloc(http->pool, NGD_HTTP_INBUF_MEDIUM);
+                ngd_str_cpy(b->pos, n, p, NGD_HTTP_INBUF_MEDIUM);
+                ngd_buf_init(b, p, NGD_HTTP_INBUF_MEDIUM);
+                b->pos += n;
+                b->last = b->pos;
+                break;
+            case NGD_HTTP_INBUF_MEDIUM:
+                p = pool_alloc(http->pool, NGD_HTTP_INBUF_LARGE);
+                ngd_str_cpy(b->pos, b->last - b->pos, p, NGD_HTTP_INBUF_LARGE);
+                ngd_buf_init(b, p, NGD_HTTP_INBUF_LARGE);
+                b->pos += n;
+                b->last = b->pos;
+                break;
+            case NGD_HTTP_INBUF_LARGE:
+                ngd_str_cpy(b->pos, b->last - b->pos, b->start, NGD_HTTP_INBUF_LARGE);
+                b->pos += n;
+                b->last = b->pos;
+                break;
+        }
+    }
+    //
+        ret = ngd_conn_recv(c, b->last, b->end - b->last, &n);
+
+        if (ret == NGD_OK) {
+            b->last += n;
+            rev->recved_each += n;
+        } else if (ret == NGD_AGAIN) {
+            return;
+        } else if (ret == NGD_ERR || ret == NGD_CLOSED) {
+            ngd_http_close_conn(http);
+        }
+
+    }
 int
 ngd_http_handle_conn(ngd_conn_t *c)
 {
@@ -69,46 +107,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
     //
     for (;;)
     {
-        //
-        if (ret == NGD_AGAIN) {
-            if (b->last == b->end) {
-                n = b->last - b->pos;
-                switch (b->end - b->start) {
-                    case NGD_HTTP_INBUF_SMALL:
-                        p = pool_alloc(http->pool, NGD_HTTP_INBUF_MEDIUM);
-                        ngd_str_cpy(b->pos, n, p, NGD_HTTP_INBUF_MEDIUM);
-                        ngd_buf_init(b, p, NGD_HTTP_INBUF_MEDIUM);
-                        b->pos += n;
-                        b->last = b->pos;
-                        break;
-                    case NGD_HTTP_INBUF_MEDIUM:
-                        p = pool_alloc(http->pool, NGD_HTTP_INBUF_LARGE);
-                        ngd_str_cpy(b->pos, b->last - b->pos, p, NGD_HTTP_INBUF_LARGE);
-                        ngd_buf_init(b, p, NGD_HTTP_INBUF_LARGE);
-                        b->pos += n;
-                        b->last = b->pos;
-                        break;
-                    case NGD_HTTP_INBUF_LARGE:
-                        ngd_str_cpy(b->pos, b->last - b->pos, b->start, NGD_HTTP_INBUF_LARGE);
-                        b->pos += n;
-                        b->last = b->pos;
-                        break;
-                }
-            }
-            ret = ngd_conn_recv(c, b->last, b->end - b->last, &n);
-
-            if (ret == NGD_OK) {
-                b->last += n;
-                rev->recved_each += n;
-            } else if (ret == NGD_AGAIN) {
-                return;
-            } else if (ret == NGD_ERR || ret == NGD_CLOSED) {
-                ngd_http_close_conn(http);
-            }
-
-        }
-
-
         switch (state)
         {
             case ps_start:
@@ -122,7 +120,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
                         ngd_http_close_conn(c);
                         return;
                     }
-                    continue;
+                    ret = ngd_http_read_request(http)
+
                 }
                 //
                 if (ret == NGD_OK) {
@@ -212,15 +211,15 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 break;
             case ps_body_len:
                 if (http->recved_each <= http->content_length) {
-                    for (;;)
-                    {
-                        ret = ngd_http_read_request(http);
-                        if (ret == NGD_AGAIN)
-                            return;
-                        if (ret == NGD_ERR)
-                            ngd_http_close_conn(http);
-
-                    }
+                    //consume until last
+                    //read request
+                    //consume until last
+                    //if last == end
+                    ret = ngd_http_read_request(http);
+                    if (ret == NGD_AGAIN)
+                        return;
+                    if (ret == NGD_ERR)
+                        ngd_http_close_conn(http);
                     //read request full;
                     //save to temp file
                     //read request full
