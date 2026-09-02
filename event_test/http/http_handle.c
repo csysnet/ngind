@@ -121,7 +121,19 @@ ngd_http_handle_conn(ngd_conn_t *c)
                         return;
                     }
                     ret = ngd_http_read_request(http)
+                    if (ret == NGD_AGAIN) {
+                        return;
+                    }
 
+                    if (ret == NGD_OK) {
+
+                    }
+
+                    if (ret == NGD_ERR) {
+                        ngd_http_close_conn();
+                        return;
+                    }
+                    break;
                 }
                 //
                 if (ret == NGD_OK) {
