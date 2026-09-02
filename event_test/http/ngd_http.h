@@ -3,12 +3,11 @@
 #define NGD_HTTP_CONN_H
 //limits
 #define NGD_HTTP_LIMIT_REQLINE (1024 * 8) //8kb
-#define NGD_HTTP_LIMIT_HEADER_LINE (1024 * 8) //8kb
 #define NGD_HTTP_LIMIT_HEADERS (1024 * 32) //16kb
 #define NGD_HTTP_LIMIT_BODY (1024 * 1024) //1mb
 //contansts
-#define NGD_HTTP_INBUF_SMALL 1024 //1kb
-#define NGD_HTTP_INBUF_MEDIUM (1024 * 8) //8kb
+#define NGD_HTTP_INBUF_SMALL (1024 * 1) //1kb
+#define NGD_HTTP_INBUF_MEDIUM (1024 * 8) //kb
 #define NGD_HTTP_INBUF_LARGE (1024 * 16) //16kb
 //
 #define NGD_HTTP_FULL_HEADER_DONE 1
@@ -46,7 +45,6 @@ struct ngd_http_t {
     u_char *ver_start;
     u_char *ver_end;
     //header
-
     ngd_list_t headers;
     u_char *key_start;
     u_char *key_end;
@@ -56,12 +54,13 @@ struct ngd_http_t {
     size_t content_length;
     bool on_zlib;
     bool on_keep_alive;
-    //body
     bool on_chunk;
+    //body
+    int fd_temp;
+    offset;
+    bool on_body_file;
     size_t chunk_size;
-    size_t chunk_recved;
-    u_char *chunk_start;
-    u_char *chunk_end;
+    size_t chunk_data_recved;
 };
 // connection
 void ngd_http_init_conn(ngd_conn_t *c);
