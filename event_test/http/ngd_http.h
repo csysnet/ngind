@@ -29,6 +29,7 @@ struct ngd_http_t {
     int state;
     ngd_pool_t *pool;
     //
+    u_char *small_inbuf[NGD_HTTP_INBUF_SMALL];
     ngd_buf_t *inbuf;
     size_t recved_each;
     ngd_buf_t *outbuf;
@@ -48,7 +49,6 @@ struct ngd_http_t {
     ngd_list_t headers;
     u_char *key_start;
     u_char *key_end;
-    str_t *mimes;
     u_char *value_start;
     u_char *value_end;
     size_t content_length;

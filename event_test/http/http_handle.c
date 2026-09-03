@@ -384,3 +384,29 @@ ngd_http_handle_conn(ngd_conn_t *c)
     //
     return NGD_OK;
 // }
+//
+//
+t
+ngd_http_init_conn(ngd_conn_t *c)
+{
+    ngd_pool_t *pool;
+    ngd_http_t *http;
+    //
+    pool = ngd_pool_create();
+    //
+    http = ngd_pool_alloc(pool, sizeof(ngd_http_t));
+    http->pool = pool;
+    http->state = NGD_STATE_START;
+    http->state_parse = NGD_STATE_START;
+    //
+    ngd_buf_init(&http->inbuf,
+                 pool_alloc(http->pool, NGD_HTTP_INBUF_SMALL),
+                 NGD_HTTP_INBUF_SMALL);
+    //
+    ngd_conn_init(c,
+                  ngd_http_handle_conn,
+                  (void *)http,
+                  60000);//60s
+    //
+    return NGD_OK;
+}
