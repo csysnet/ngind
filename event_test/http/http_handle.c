@@ -289,6 +289,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                     }
                     if (b->end - b->pos <= http->content_length) {
                         b->start = b->pos;
+                        b->end = b->pos + http->content_length;
                     } else {
                         if (http->content_length > NGD_HTTP_INBUF_LARGE) {
                             http->on_body_file = true;
