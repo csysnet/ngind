@@ -29,12 +29,11 @@ struct ngd_http_t {
     int state;
     ngd_pool_t *pool;
     //
-    u_char *small_inbuf[NGD_HTTP_INBUF_SMALL];
     ngd_buf_t *inbuf;
     size_t recved_each;
     ngd_buf_t *outbuf;
     //parse stuff
-    int state_parse;
+    int state_req;
     //request line
     str_t *smethod;
     str_t *suri;
@@ -55,6 +54,7 @@ struct ngd_http_t {
     bool on_zlib;
     bool on_keep_alive;
     bool on_chunk;
+    bool on_content_length;
     //body
     int fd_temp;
     offset;
@@ -66,15 +66,11 @@ struct ngd_http_t {
 void ngd_http_init_conn(ngd_conn_t *c);
 int ngd_http_close_conn(ngd_conn_t *c);
 int ngd_http_handle_conn(ngd_conn_t *c);
-int ngd_http_handle_conn_read(ngd_conn_t *c);
-int ngd_http_handle_conn_write(ngd_conn_t *c);
-int ngd_http_read_request(ngd_http_t *c);
 // http
 int ngd_http_parse_reqline(ngd_http_t *http); //(until pos == last) -> undone -> again
 int ngd_http_parse_headers(ngd_http_t *http); //(pos <= last) -> done -> ok
 int ngd_http_parse_body(ngd_http_t *http);
 int ngd_http_build_resp(ngd_http_t *http);
-int ngd_http_compress_resp(ngd_http_t *http);
 int ngd_http_send_resp(ngd_http_t *http);
 //
 #endif

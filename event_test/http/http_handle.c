@@ -79,7 +79,7 @@ if (ret == NGD_AGAIN) {
         }
 
     }
-int
+void
 ngd_http_handle_conn(ngd_conn_t *c)
 {
     ngd_http_t *http;
@@ -91,32 +91,29 @@ ngd_http_handle_conn(ngd_conn_t *c)
         ps_body_chunk,
         ps_body_len,
         ps_build_resp,
-        ps_compress_resp,
         ps_send_resp,
     } state;
     int ret;
-    ngd_buf_t *b;
+    ngd_buf_t *hb;
+    ngd_buf_t *bb;
+    ngd_buf_t *ob;
     size_t n;
     ngd_http_header_t *header;
-    ngd_str_t *key;
-    size_t bytes_recved;
-    void *new_buf;
     //
     http = ngd_conn_get_data(c);
     state = http->state;
-    b = http->inbuf;
-    ret = NGD_AGAIN;
+    hb = http->headbuf;
+    bb = http->bodybuf;
+    ob = http->outbuf;
     //
     for (;;)
     {
         switch (state)
         {
             case ps_start:
-                http->bytes_recved = 0;
-                ret = ngd_conn_recv(c, c->inbuf, b->last - b->end, &bytes_recved);
+                ret = ngd_conn_recv(c, c->inbuf, b->last - b->end, &n);
                 if (ret == NGD_OK) {
                     b->last += bytes_recved;
-                    http->recved_each += bytes_recved;
                 }
                 if (ret == NGD_ERR || ret == NGD_CLOSED) {
                     ngd_http_close_conn();
@@ -128,31 +125,14 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 ret = ngd_http_parse_reqline(http);
                 //
                 if (ret == NGD_AGAIN) {
-                    if (http->recved_each > NGD_HTTP_LIMIT_REQLINE) {
-                        ngd_http_close_conn(c);
+                    if (b->last == b->end) {
+                        ngd_http_close_conn();
                         return;
                     }
-                    if (c->last == b->end) {
-                        new_buf = pool_alloc(http->pool, NGD_HTTP_INBUF_MEDIUM);
-                        //
-                        ngd_str_cpy(NGD_STR(b->start, b->end - b->start), NGD_STR(newbuf, NGD_HTTP_INBUF_MEDIUM))
-                        b->last = new_buf + (b->last - b->start);
-                        b->pos = new_buf + (b->pos - b->start);
-                        b->start = new_buf;
-                        b->end = new_buf + NGD_HTTP_INBUF_MEDIUM;
-                        //
-                        http->ver_start = new_buf + (http->ver_start - http->method_start)
-                        http->uri_end = new_buf + (http->uri_end - http->method_start)
-                        http->uri_start = new_buf + (http->uri_start - http->method_start)
-                        http->method_end = new_buf + (http->method_end - http->method_start)
-                        http->method_start = new_buf;
-                        //
-                    }
-
-                    ret = ngd_conn_recv(c, c->inbuf, b->last - b->end, &bytes_recved);
+                    //
+                    ret = ngd_conn_recv(c, b, b->last - b->end, &n);
                     if (ret == NGD_OK) {
-                        b->last += bytes_recved;
-                        http->recved_each += bytes_recved;
+                        b->last += n;
                     }
                     if (ret == NGD_AGAIN) {
                         return;
@@ -171,60 +151,40 @@ ngd_http_handle_conn(ngd_conn_t *c)
                     http->suri.len = http->uri_end - http->uri_start;
                     http->sver.data = http->ver_start;
                     http->sver.len = http->ver_end - http->ver_start;
-                    http->recved_each += n;
-                    http->state_each = 0;
                     state = ps_headers;
                 }
 
                 if (ret == NGD_ERR) {
                     ngd_http_close_conn(http);
+                    return;
                 }
                 break;
             case ps_headers:
                 ret = ngd_http_parse_headers(http);
+                if (ret == NGD_ERR) {
+                    ngd_http_close_conn(http);
+                    return;
+                }
                 if (ret == NGD_AGAIN) {
-                    if (http->recved_each > NGD_HTTP_LIMIT_REQLINE) {
-                        ngd_http_close_conn(c);
+                    if (b->last == b->end) {
+                        ngd_http_close_conn(http);
                         return;
                     }
-
-                    if (b->last == b->end) {
-                        switch (b->end - b->start)
-                        {
-                            case NGD_HTTP_INBUF_SMALL:
-                                n = NGD_HTTP_INBUF_MEDIUM; break;
-                            case NGD_HTTP_INBUF_MEDIUM:
-                                n = NGD_HTTP_INBUF_LARGE; break;
-                        }
-                        new_buf = pool_alloc(http->pool, n);
-                        ngd_str_cpy(NGD_STR(http->key_start, b->last), NGD_STR(new_buf, n));
-                        //
-                        b->last = new_buf + (b->last - http->key_start);
-                        b->pos = new_buf + (b->pos - b->key_start);
-                        b->start = new_buf;
-                        b->end = new_buf + NGD_HTTP_INBUF_MEDIUM;
-                        //
-                        http->value_start = new_buf + (http->value_start - http->key_start);
-                        http->key_end = new_buf + (http->key_end - http->key_start);
-                        http->key_start = new_buf;
-                        //
-                    }
-                    ret = ngd_conn_recv(c, b, b->end - b->last, &bytes_recved);
+                    ret = ngd_conn_recv(c, b, b->end - b->last, &n);
                     if (ret == NGD_OK) {
                         b->last += bytes_recved;
-                        http->recved_each += bytes_recved;
                     }
 
-                    if (ret == NGD_ERR) {
+                    if (ret == NGD_ERR || ret == NGD_CLOSED) {
                         ngd_http_close_conn(c);
                         return;
                     }
 
                     if (ret == NGD_AGAIN)
                         return;
+                    break;
                 }
-
-
+                //
                 if (ret == NGD_OK) {
                     header = pool_alloc(http->pool, sizeof(*header));
                     header->key.data = http->key_start;
@@ -232,162 +192,211 @@ ngd_http_handle_conn(ngd_conn_t *c)
                     header->value.data = http->value_start;
                     header->value.len = http->value_end - http->value_start;
                     ngd_list_append(http->headers, (void *)header);
+                    break;
                 }
                 if (ret == NGD_HTTP_FULL_HEADER_DONE) {
                     for (ngd_list_node_t *node = http->headers.head;
                                           node != NULL;
-                                          node->next;)
+                                          node = node->next;)
                     {
                         header = node->data;
                         if (ngd_str_iequal(header->key, NGD_STR_C("Content-Length"))) {
+                            http->on_content_length = true;
                             ret = ngd_str_to_size(header->key, &http->content_length);
-                            if (ret == NGD_ERR)
+                            if (ret == NGD_ERR) {
                                 ngd_http_close_conn(http);
-                        }
-
-                        if (ngd_str_iequal(header->key ,NGD_STR_C("Transfer-Encoding"))) {
+                                return;
+                            }
+                        } else if (ngd_str_iequal(header->key ,NGD_STR_C("Transfer-Encoding"))) {
                             if (ngd_str_iequal(header->value, NGD_STR_C("chunked"))) {
                                 http->on_chunked = true;
                             }
-                        }
-
-                        if (ngd_str_iequal(header->key ,NGD_STR_C("Connection"))) {
+                        } else if (ngd_str_iequal(header->key ,NGD_STR_C("Connection"))) {
                             if (ngd_str_iequal(header->value, NGD_STR_C("keep-alive"))) {
                                 http->on_keep_alive = true;
                             }
                         }
-
-                        if (ngd_str_iequal(header->key ,NGD_STR_C("Accept-Encoding"))) {
-                            if (ngd_str_isin(NGD_STR_C("gzip"), header->value, false)) {
-                                http->on_gzip = true;
-                            } else {
-                                http->on_gzip = false;
-                            }
-                        }
-                        state = ps_body;
-                        continue;
                     }
-                }
-                if (ret == NGD_ERR) {
-                    ngd_http_close_conn(http);
-                    return;
+                    state = ps_body;
+                    break;
                 }
                 break;
             case ps_body:
                 if (http->on_chunk) {
-                    new_buf = pool_alloc(http->pool, NGD_HTTP_INBUF_LARGE);
-                    b->start = new_buf;
-                    b->pos = b->start;
-                    b->last = b->start;
-                    b->end = b->start + NGD_HTTP_INBUF_LARGE;
                     state = ps_body_chunk;
                 } else {
-                    if (http->content_length == 0 ||
+                    if (!http->on_content_length ||
                         http->content_length > NGD_HTTP_LIMIT_BODY) {
                         ngd_http_close_conn(http);
                         return;
                     }
-                    if (b->end - b->pos <= http->content_length) {
-                        b->start = b->pos;
-                        b->end = b->pos + http->content_length;
-                    } else {
-                        if (http->content_length > NGD_HTTP_INBUF_LARGE) {
-                            http->on_body_file = true;
-                            fd_temp = open()...
-                            n = NGD_HTTP_INBUF_LARGE;
-                        } else if (http->content_length > NGD_HTTP_INBUF_MEDIUM) {
-                            n = NGD_HTTP_INBUF_LARGE;
-                        } else if (http->content_length > NGD_HTTP_INBUF_SMALL) {
-                            n = NGD_HTTP_INBUF_MEDIUM
-                        } else {
-                            n = NGD_HTTP_INBUF_SMALL;
-                        }
-                        new_buf = pool_alloc(http->pool, n);
-                        b->start = new_buf;
-                        b->pos = b->start;
-                        b->last = b->start;
-                        b->end = b->start + n;
+                    if (http->content_length == 0) {
+                        state = ps_build_resp;
+                        break;
+                    }
+                    //
+                    if (http->content_length > NGD_HTTP_BODY_LEN) {
+                        http->on_body_file = true;
+                        http->temp_fd = ..
+                        fd_temp = open()...
                     }
                     state = ps_body_len;
                 }
+                ngd_str_cpy(
+                    hb->pos,
+                    bb->pos,
+                    (size_t)hb->last - hb->pos
+                );
+                bb->last += hb->last - hb->pos;
+                http->body_recved += hb->last - hb->pos;
                 break;
             case ps_body_chunk:
                 ret = ngd_http_parse_chunk(http);
+                if (ret == NGD_ERR) {
+                    ngd_http_close_conn(http);
+                    return;
+                }
                 if (ret == NGD_OK) {
                     state = ps_build_resp;
+                    break;
                 }
                 if (ret == NGD_AGAIN) {
-                    if (http->recved_each > NGD_HTTP_LIMIT_BODY) {
+                    if (http->body_recved > NGD_HTTP_LIMIT_BODY) {
                         ngd_http_close_conn(http);
                         return;
                     }
-                    if (b->end == b->last) {
-
-                        if (http->on_body_file) {
-                            write(fd_temp, b->start, b->end - b->start);
-                            b->pos = b->start;
-                            b->last = b->start;
-                        } else {
-
+                    //
+                    if (bb->last == bb->end) {
+                        if (!http->on_body_file) {
+                            ngd_http_close_conn(c);
+                            return;
                         }
+                        ret = ngd_file_write(http->fd_temp, bb->start, bb->end - bb->start);
+                        if (ret == NGD_ERR) {
+                            ngd_http_close_conn(http);
+                            return;
+                        }
+                        bb->pos = bb->start;
+                        bb->last = bb->start;
                     }
-                    ret = ngd_conn_recv(c, b, b->end - b->last, &bytes_recved)
+                    ret = ngd_conn_recv(c, bb, bb->end - bb->last, &n);
                     if (ret == NGD_OK) {
-                        b->last += bytes_recved;
-                        http->recved_each += bytes_recved;
+                        bb->last += n;
+                        bb->body_recved += n;
+                        break;
                     }
-                    if (ret == NGD_AGAIN) {
-                        return;
-                    }
-
                     if (ret == NGD_ERR) {
                         ngd_http_close_conn(c);
                         return;
                     }
+                    if (ret == NGD_AGAIN)
+                        return;
+
                 }
                 break;
             case ps_body_len:
-                if ()
-                if (http->recved_each <= http->content_length) {
-                    //consume until last
-                    //read request
-                    //consume until last
-                    //if last == end
-                    ret = ngd_conn_recv(c, b, b->end - b->last, &bytes_recved);
-                    if (ret == NGD_OK) {
-                        http->recved_each += bytes_recved;
-                        b->last += bytes_recved;
-                    }
-                    if (ret == NGD_AGAIN)
-                        return;
-                    if (ret == NGD_ERR)
-                        ngd_http_close_conn(http);
-                    //read request full;
-                    //save to temp file
-                    //read request full
-                    //save to temp file
+                if (bb->body_recved == http->content_length) {
+                    state = ps_build_resp;
+                    break;
                 }
-                //
-
+                if (bb->last == bb->end) {
+                    if (!http->on_body_file) {
+                        state = ps_build_resp;
+                        break;
+                    }
+                    ret = ngd_file_write(http->fd_temp, bb->start, bb->end - bb->start);
+                    if (ret == NGD_ERR) {
+                        ngd_http_close_conn(http);
+                        return;
+                    }
+                    bb->pos = bb->start;
+                    bb->last = bb->start;
+                }
+                ret = ngd_conn_recv(c, bb, b->end - bb->last, &n);
+                if (ret == NGD_ERR) {
+                    ngd_http_close_conn(c);
+                    return;
+                }
+                if (ret == NGD_AGAIN)
+                    return;
+                if (ret == NGD_OK) {
+                    bb->last += n;
+                    bb->body_recved += n;
+                    break;
+                }
                 break;
             case ps_build_resp:
                 ret = ngd_http_build_resp(http);
-                break;
-            case ps_compress_resp:
-                ret = ngd_http_compress_resp(http);
                 break;
             case ps_send_resp:
                 ret = ngd_http_send_resp(http);
                 break;
         }
     }
-
+    http->state = state;
     //
     return NGD_OK;
-// }
+}
 //
+int
+ngd_http_build_resp(ngd_http_t *http)
+{
+    ngd_buf_t *ob;
+    char *stype;
+    char *sconn;
+    size_t *len;
+    //
+    const char *s =
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: %s\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Length: %lu\r\n"
+        "\r\n"
+    ob = http->outbuf;
+    //Connection
+    if (http->on_keep_alive)
+        sconn = "keep-alive";
+    else
+        sconn = "close";
+    //Content-Type
+    if (ngd_str_isin(NGD_STR_C(".html"), http->uri)) {
+        stype = "text/html";
+    } else if (ngd_str_isin(NGD_STR_C(".css"), http->uri)) {
+        stype = "text/css";
+    } else if (ngd_str_isin(NGD_STR_C(".js"), http->uri)) {
+        stype = "text/javascript";
+
+    } else if (ngd_str_isin(NGD_STR_C(".json"), http->uri)) {
+        stype = "application/json";
+
+    } else if (ngd_str_isin(NGD_STR_C(".jpg"), http->uri) ||
+               ngd_str_isin(NGD_STR_C(".jpeg"), http->uri)) {
+        stype = "image/jpeg";
+
+    } else if (ngd_str_isin(NGD_STR_C(".png"), http->uri)) {
+        stype = "image/png";
+
+    } else if (ngd_str_isin(NGD_STR_C(".gif"), http->uri)) {
+        stype = "image/gif";
+
+    } else if (ngd_str_isin(NGD_STR_C(".svg"), http->uri)) {
+        stype = "image/svg+xml";
+
+    } else if (ngd_str_isin(NGD_STR_C(".ico"), http->uri)) {
+        stype = "image/x-icon";
+    } else {
+        stype = "application/octet-stream";
+    }
+    //Content-Length
+    len = (sizeof(stype) - 1) + size of the file;
+    //
+    x
+    //
+    write remain to outbuf, remain = 16kb - sizeof(s); ok and return to
+    //
+}
 //
-t
+void
 ngd_http_init_conn(ngd_conn_t *c)
 {
     ngd_pool_t *pool;

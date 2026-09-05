@@ -40,8 +40,7 @@ ngd_http_read_request(ngd_http_t *c)
 
 }
 
-
-int
+void
 ngd_http_init_conn(ngd_conn_t *c)
 {
     ngd_pool_t *pool;
@@ -75,8 +74,9 @@ ngd_http_handle_conn(ngd_conn_t *c)
         ps_reqline,
         ps_headers,
         ps_body,
+        ps_body_len,
+        ps_body_chunk,
         ps_build_resp,
-        ps_compress_resp,
         ps_send_resp,
     } state;
     int ret;
@@ -180,9 +180,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 break;
             case ps_build_resp:
                 ret = ngd_http_build_resp(http);
-                break;
-            case ps_compress_resp:
-                ret = ngd_http_compress_resp(http);
                 break;
             case ps_send_resp:
                 ret = ngd_http_send_resp(http);
@@ -297,7 +294,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
 //     return NGD_OK;
 // }
 //
-int
+void
 ngd_http_handle_conn(ngd_conn_t *c)
 {
     ngd_http_t *http;
@@ -307,7 +304,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
         ps_headers,
         ps_body,
         ps_build_resp,
-        ps_compress_resp,
         ps_send_resp,
     } state;
     int ret;
@@ -390,19 +386,14 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 case ps_build_resp:
                     ret = ngd_http_build_resp(http);
                     break;
-                case ps_compress_resp:
-                    ret = ngd_http_compress_resp(http);
-                    break;
-                case ps_send_resp:
+                case ps_send_resp: //must do compress each part if it gzip and send parts
                     ret = ngd_http_send_resp(http);
                     break;
             }
         }
     }
-
-    //
-    return NGD_OK;
-// }
+    http->state = state;
+}
 //
 //
 int ngd_http_close_conn(ngd_conn_t *c);

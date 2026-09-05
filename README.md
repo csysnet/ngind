@@ -69,3 +69,15 @@ explain why we use p < b->last
 TRAVEL REDUNDANT ret err
 data first then handler
 maby receive not return actual error
+
+
+ngd_buf_init(
+        http->inbuf,
+        ngd_pool_alloc(pool, NGD_HTTP_INBUF_SIZE),
+        NGD_HTTP_INBUF_SIZE);
+
+ngd_buf_init(
+        http->inbuf,
+        ngd_pool_alloc(pool, NGD_HTTP_INBUF_SIZE),
+        NGD_HTTP_INBUF_SIZE
+    );
