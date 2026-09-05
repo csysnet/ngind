@@ -388,10 +388,14 @@ ngd_http_build_resp(ngd_http_t *http)
         stype = "application/octet-stream";
     }
     //Content-Length
-    len = (sizeof(stype) - 1) + size of the file;
+    ngd_file_init(http->file_send);
+    if (ngd_file_open(http->file_send, ...) == NGD_ERR)
+        return NGD_ERR;
+    ngd_file_get_size(http->file_send, &len);
+    len += (sizeof(stype) - 1);
     //
-    x
-    //
+    remain = NGD_HTTP_OUTBUF_LEN - len;
+    ngd_file_read(http->file_send, http->onbuf, remain, &n);
     write remain to outbuf, remain = 16kb - sizeof(s); ok and return to
     //
 }
