@@ -1,3 +1,30 @@
+
+/*BEGIN state handler*/
+/*END state handler*/
+
+//GET FUL HEA
+//AFTER
+//quakhu+condi=fut
+//> 2: 1state
+// it should know it own linear byte that other control
+// which portion you want, you have
+
+conninitret
+/*BEGIN directives*/
+#define BUFLEN 8192
+/*END directives*/
+//what you stuck here bro
+
+block = (pool_block_t *)malloc(BLOCKSIZE);
+    fprintf(stderr, RED"block range: (%p, %p)\n"RESET, block, block + BLOCKSIZE);
+
+
+l = (pool_large_t *)malloc(sizeof(pool_large_t) + size);
+    fprintf(stderr, RED"large range: (%p, %p)\n"RESET, l, l + sizeof(pool_large_t) + size);
+
+
+later gather all headers to core
+???????
 # chat
 
 wisely is to and what to not
@@ -69,15 +96,3 @@ explain why we use p < b->last
 TRAVEL REDUNDANT ret err
 data first then handler
 maby receive not return actual error
-
-
-ngd_buf_init(
-        http->inbuf,
-        ngd_pool_alloc(pool, NGD_HTTP_INBUF_SIZE),
-        NGD_HTTP_INBUF_SIZE);
-
-ngd_buf_init(
-        http->inbuf,
-        ngd_pool_alloc(pool, NGD_HTTP_INBUF_SIZE),
-        NGD_HTTP_INBUF_SIZE
-    );

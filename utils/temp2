@@ -1,9 +1,0 @@
-block = (pool_block_t *)malloc(BLOCKSIZE);
-    fprintf(stderr, RED"block range: (%p, %p)\n"RESET, block, block + BLOCKSIZE);
-
-
-l = (pool_large_t *)malloc(sizeof(pool_large_t) + size);
-    fprintf(stderr, RED"large range: (%p, %p)\n"RESET, l, l + sizeof(pool_large_t) + size);
-
-
-later gather all headers to core
