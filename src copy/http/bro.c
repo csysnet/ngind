@@ -100,6 +100,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
         switch (state)
         {
             case ps_start:
+                ngd_list_init(http->headers);
                 ret = ngd_conn_recv(c, c->inbuf, b->last - b->end, &n);
                 if (ret == NGD_ERR)
                     goto error;
@@ -137,14 +138,14 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 if (ret == NGD_ERR)
                     goto error;
                 if (ret == NGD_AGAIN) {
-                    if (b->last == b->end)
+                    if (hb->last == hb->end)
                         goto error;
-                    ret = ngd_conn_recv(c, b, b->end - b->last, &n);
+                    ret = ngd_conn_recv(c, hb, hb->end - hb->last, &n);
                     if (ret == NGD_ERR)
                         goto error;
                     if (ret == NGD_AGAIN)
                         goto again;
-                    b->last += bytes_recved;
+                    hb->last += n;
                     break;
                 }
                 //
@@ -172,7 +173,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                     state = ps_body;
                     break;
                 }
-                header = pool_alloc(http->pool, sizeof(*header));
+                header = ngd_pool_alloc(http->pool_req, sizeof(*header));
                 header->key.data = http->key_start;
                 header->key.len = http->key_end - http->key_start;
                 header->value.data = http->value_start;
@@ -282,6 +283,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 if (ret == NGD_AGAIN)
                     goto again;
                 if (ret == NGD_HTTP_SEND_FULL_DONE) {
+                    ngd_file_close(file->file_temp);
+                    ngd_file_close(file->file_send);
                     if (!http->on_keep_alive) {
                         goto done;
                     }
@@ -302,106 +305,5 @@ error:
     ngd_http_close_conn(c);
     http->state = state;
     return;
-}
-//
-int
-ngd_http_send_resp(ngd_http_t *http)
-{
-    ngd_buf_t *ob;
-    size_t n;
-    int ret;
-    //
-    ob = http->outbuf;
-    //
-    if (ob->last == ob->end) {
-        if (ob->pos == ob->last) {
-            b->pos = b->start;
-            b->last = b->start;
-            return NGD_OK;
-        }
-        ret = ngd_conn_send(http->conn, ob->pos, ob->last - b->pos, &n);
-        if (ret == NGD_OK) {
-            ob->pos += n;
-            return NGD_OK;
-        }
-        if (ret == NGD_ERR || ret == NGD_AGAIN)
-            return ret;
-    }
-    ret = ngd_file_read(http->file_send, ob->last, ob->end - ob->last, &n)
-    if (ret == NGD_FILE_DONE)
-        return NGD_HTTP_SEND_FULL_DONE;
-    if (ret == NGD_ERR)
-        return NGD_ERR;
-    ob->last += n;
-    //
-    return NGD_OK;
-}
-
-//
-int
-ngd_http_build_resp(ngd_http_t *http)
-{
-    ngd_buf_t *ob;
-    char *sconn;
-    char *stype;
-    size_t *len;
-    int n;
-    //
-    const char *fresp =
-        "HTTP/1.1 200 OK\r\n"
-        "Connection: %s\r\n"
-        "Content-Type: %s\r\n"
-        "Content-Length: %lu\r\n"
-        "\r\n"
-    ob = http->outbuf;
-    //Connection
-    if (http->on_keep_alive)
-        sconn = "keep-alive";
-    else
-        sconn = "close";
-    //Content-Type
-    if (ngd_str_isin(NGD_STR_C(".html"), http->uri)) {
-        stype = "text/html";
-    } else if (ngd_str_isin(NGD_STR_C(".css"), http->uri)) {
-        stype = "text/css";
-    } else if (ngd_str_isin(NGD_STR_C(".js"), http->uri)) {
-        stype = "text/javascript";
-
-    } else if (ngd_str_isin(NGD_STR_C(".json"), http->uri)) {
-        stype = "application/json";
-
-    } else if (ngd_str_isin(NGD_STR_C(".jpg"), http->uri) ||
-               ngd_str_isin(NGD_STR_C(".jpeg"), http->uri)) {
-        stype = "image/jpeg";
-
-    } else if (ngd_str_isin(NGD_STR_C(".png"), http->uri)) {
-        stype = "image/png";
-
-    } else if (ngd_str_isin(NGD_STR_C(".gif"), http->uri)) {
-        stype = "image/gif";
-
-    } else if (ngd_str_isin(NGD_STR_C(".svg"), http->uri)) {
-        stype = "image/svg+xml";
-
-    } else if (ngd_str_isin(NGD_STR_C(".ico"), http->uri)) {
-        stype = "image/x-icon";
-    } else {
-        stype = "application/octet-stream";
-    }
-    //Content-Length
-    ngd_file_init(http->file_send);
-    if (ngd_file_open(http->file_send, ...) == NGD_ERR)
-        return NGD_ERR;
-    ngd_file_get_size(http->file_send, &len);
-    //
-    n = snprintf(b->last, b->end - b->last, fresp, sconn, stype, len);
-    if (n < 0) {
-        return NGD_ERR;
-    }
-    b->last += n;
-    if (ngd_conn_enable_write(c) == NGD_ERR)
-        return NGD_ERR;
-    //
-    return NGD_OK;
 }
 //

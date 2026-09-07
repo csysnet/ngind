@@ -5,6 +5,8 @@
 //
 typedef struct ngd_file_t ngd_file_t;
 //
+#define NGD_FILE_DONE 1
+//
 void ngd_file_init(ngd_file_t *f);
 void ngd_file_close(ngd_file_t *f);
 int ngd_file_open(ngd_file_t *f, const char *path);

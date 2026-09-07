@@ -14,6 +14,7 @@
 #define NGD_ERR -1
 #define NGD_AGAIN -2
 //
+#define NGD_STATIC_PATH "/WWW"
 #define NGD_STATE_START 0
 //
 #define RED     "\033[31m"
