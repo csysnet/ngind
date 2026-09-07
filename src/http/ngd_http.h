@@ -60,7 +60,7 @@ struct ngd_http_t {
 // connection
 void ngd_http_init_conn(ngd_conn_t *c);
 void ngd_http_close_conn(ngd_conn_t *c);
-int ngd_http_handle_conn(ngd_conn_t *c);
+void ngd_http_handle_conn(ngd_conn_t *c);
 // http
 int ngd_http_parse_reqline(ngd_http_t *http); //(until pos == last) -> undone -> again
 int ngd_http_parse_headers(ngd_http_t *http); //(pos <= last) -> done -> ok

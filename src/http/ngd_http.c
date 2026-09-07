@@ -74,7 +74,7 @@ ngd_http_close_conn(ngd_conn_t *c)
     ngd_pool_destroy(http->pool_req);
     ngd_conn_close(c);
 }
-int
+void
 ngd_http_handle_conn(ngd_conn_t *c)
 {
     ngd_http_t *http;
@@ -130,6 +130,10 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 http->suri.len = http->uri_end - http->uri_start;
                 http->sver.data = http->ver_start;
                 http->sver.len = http->ver_end - http->ver_start;
+                //
+                if (!ngd_str_equal(http->suri, NGD_STR_C("GET")))
+                    goto error;
+                //
                 state = ps_headers;
                 break;
             case ps_headers:
@@ -209,14 +213,14 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 if (ret == NGD_AGAIN)
                     goto again;
                 if (ret == NGD_HTTP_FULL_SEND_DONE) {
-                    ngd_file_close(http->file_send);
+                    ngd_file_close(&http->file_send);
                     if (!http->on_keep_alive) {
                         goto done;
                     }
                     //
                     ngd_pool_destroy(http->pool_req);
                     http->pool_req = ngd_pool_create();
-                    if (http->pool_req == NGD_ERR)
+                    if (http->pool_req == NULL)
                         goto error;
                     //
                     n = b->last - b->pos;
@@ -317,8 +321,8 @@ ngd_http_build_resp(ngd_http_t *http)
     ngd_str_cpy(file_path, http->suri.data, http->suri.len);
     file_path[(sizeof(NGD_STATIC_PATH) - 1) + (http->suri.len)] = '\0';
     //
-    ngd_file_init(http->file_send);
-    if (ngd_file_open(http->file_send, file_path) == NGD_ERR)
+    ngd_file_init(&http->file_send);
+    if (ngd_file_open(&http->file_send, file_path) == NGD_ERR)
         return NGD_ERR;
     if (ngd_file_get_size(http->file_send, &len) == NGD_ERR)
         return NGD_ERR;
