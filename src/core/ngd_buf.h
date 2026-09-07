@@ -10,7 +10,7 @@ typedef struct {
     u_char *end;
 } ngd_buf_t;
 //
-inline void
+static inline void
 ngd_buf_init(ngd_buf_t *b, void *data, size_t len)
 {
     b->start = data;

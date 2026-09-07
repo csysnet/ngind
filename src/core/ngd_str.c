@@ -4,34 +4,6 @@
 #include "ngd_str.h"
 //
 void
-ngd_str_cpy(u_char *dest, u_char *src, size_t n)
-{
-
-}
-bool
-ngd_str_isin(ngd_str_t s1, ngd_str_t s2)
-{
-    return true;
-}
-
-
-bool
-ngd_str_iequal(ngd_str_t s1, ngd_str_t s2)
-{
-    return true;
-
-}
-bool
-ngd_str_equal(ngd_str_t s1, ngd_str_t s2)
-{
-    return true;
-}
-void
-ngd_str_zeros(u_char *buf, size_t len)
-{
-    memset((void *)buf, 0,len);
-}
-void
 ngd_str_print(ngd_str_t s)
 {
     for (size_t i=0; i < s.len ; ++i)

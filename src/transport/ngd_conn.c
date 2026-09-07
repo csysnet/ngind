@@ -7,7 +7,6 @@
 #include "ngd_str.h"
 //
 static void listener_init(int port, int backlog, void (*init_conn)(ngd_conn_t *));
-//
 /*
  * connection
  */
@@ -42,14 +41,12 @@ ngd_conn_handle_event(ngd_event_t *ev)
     //
     c = NGD_EVENT_GET_DATA(ev);
     //
-    c->on_read = false;
-    c->on_write = false;
-    c->on_timeout = false;
-    //
     if (NGD_EVENT_IS(ev, NGD_EVENT_READ)) c->on_read = true;
     if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) c->on_write = true;
     //
     c->handler(c);
+    c->on_read = false;
+    c->on_write = false;
 }
 //
 static void
@@ -59,13 +56,9 @@ ngd_conn_handle_timeout(ngd_timer_t *tmr)
     //
     c = NGD_TIMER_GET_DATA(tmr);
     //
-    c->on_read = false;
-    c->on_write = false;
-    c->on_timeout = false;
-    //
     c->on_timeout = true;
-    //
     c->handler(c);
+    c->on_timeout = false;
 }
 //
 void ngd_conn_module_init(int port, int backlog, bool on_tls, void (*init_conn)(ngd_conn_t *))

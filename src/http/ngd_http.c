@@ -324,7 +324,7 @@ ngd_http_build_resp(ngd_http_t *http)
     ngd_file_init(&http->file_send);
     if (ngd_file_open(&http->file_send, file_path) == NGD_ERR)
         return NGD_ERR;
-    if (ngd_file_get_size(http->file_send, &len) == NGD_ERR)
+    if (ngd_file_get_size(&http->file_send, &len) == NGD_ERR)
         return NGD_ERR;
     //
     if (ngd_str_snprintf(
