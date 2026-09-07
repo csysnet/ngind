@@ -4,6 +4,11 @@
 #include "ngd_str.h"
 //
 void
+ngd_str_zeros(u_char *buf, size_t len)
+{
+    memset((void *)buf, 0,len);
+}
+void
 ngd_str_print(ngd_str_t s)
 {
     for (size_t i=0; i < s.len ; ++i)
