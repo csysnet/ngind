@@ -7,6 +7,9 @@ tech:
 - C 
 
 run: 
-- cd ./src
-- gcc -Icore -Itransport -Ihttp -o server server.c core/*c transport/*.c http/*.c
-- ./server
+```bash
+cd ./src
+```bash
+gcc -Icore -Itransport -Ihttp -o server server.c core/*c transport/*.c http/*.c
+```bash
+./server
