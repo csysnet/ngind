@@ -45,7 +45,7 @@ ngd_conn_handle_event(ngd_event_t *ev)
         c->on_read = true;
         c->handler(c);
         if (c != NULL)
-        	c->on_read = read;
+        	c->on_read = false;
     }
     if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) {
         c->on_write = true;
