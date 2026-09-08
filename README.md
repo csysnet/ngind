@@ -21,11 +21,11 @@ gcc -Icore -Itransport -Ihttp -o server server.c core/*c transport/*.c http/*.c
 use:
 - open browser, type
 ```bash
-http://localhost:CUSTOM_PORT/index.html
+http://localhost:8080/index.html
 ```
 - better look?
 ```bash
-http://localhost:CUSTOM_PORT/fancy/index.html
+http://localhost:8080/fancy/index.html
 ```
 - specific file?
 ```bash
