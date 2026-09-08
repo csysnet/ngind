@@ -27,7 +27,7 @@ http://localhost:8080/index.html
 ```bash
 http://localhost:8080/fancy/index.html
 ```
-- specific file?
+- specific file/port?
 ```bash
 http://localhost:CUSTOM_PORT/FILENAME
 ```
