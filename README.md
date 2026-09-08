@@ -29,9 +29,9 @@ http://localhost:CUSTOM_PORT/fancy/index.html
 ```
 - specific file?
 ```bash
-http://localhost:CUSTOM_PORT/filename
+http://localhost:CUSTOM_PORT/FILENAME
 ```
-- note: filename must contain their extension, `filename="index.html"` not `filename="index"`
+- note: filename must contain their extension, `FILENAME="index.html"` not `FILENAME="index"`
 
 custom:
 - port: goto `./src/server.c`, change `#define PORT 8080` -> `#define PORT CUSTOM_PORT`
