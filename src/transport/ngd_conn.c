@@ -41,12 +41,16 @@ ngd_conn_handle_event(ngd_event_t *ev)
     //
     c = NGD_EVENT_GET_DATA(ev);
     //
-    if (NGD_EVENT_IS(ev, NGD_EVENT_READ)) c->on_read = true;
-    if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) c->on_write = true;
-    //
-    c->handler(c);
-    c->on_read = false;
-    c->on_write = false;
+    if (NGD_EVENT_IS(ev, NGD_EVENT_READ)) {
+        c->on_read = true;
+        c->handler(c);
+        c->on_read = false;
+    }
+    if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) {
+        c->on_write = true;
+        c->handler(c);
+        c->on_write = false;
+    }
 }
 //
 static void
@@ -67,6 +71,7 @@ void ngd_conn_module_init(int port, int backlog, bool on_tls, void (*init_conn)(
     ngd_timer_module_init();
     //
     listener_init(port, backlog, init_conn);
+    ngd_str_log("server listening on port %d", port);
 }
 //
 void
@@ -104,10 +109,15 @@ ngd_conn_init(ngd_conn_t *c,
 void
 ngd_conn_close(ngd_conn_t *c)
 {
+    int fd;
+    //
+    fd = c->fd;
+    //
     ngd_timer_unregis(&c->timer);
     ngd_event_unregis(&c->event);
-    close(c->fd);
+    close(fd);
     ngd_conn_release(c);
+    ngd_str_log("closed connection fd: %d", fd);
 }
 //
 int
@@ -253,6 +263,7 @@ listener_handle_event(ngd_event_t *ev)
     c = listener_accept();
     if (c != NULL)
     listener.init_conn(c);
+    ngd_str_log("accepted connection fd: %d", c->fd);
 }
 //
 static void

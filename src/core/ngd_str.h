@@ -16,10 +16,8 @@ struct ngd_str_t {
 };
 //
 void ngd_str_cpy(u_char *dest, u_char *src, size_t n);
-bool ngd_str_isin(ngd_str_t s1, ngd_str_t s2);
-bool ngd_str_iequal(ngd_str_t s1, ngd_str_t s2);
-bool ngd_str_equal(ngd_str_t s1, ngd_str_t s2);
 void ngd_str_zeros(u_char *buf, size_t len);
+void ngd_str_log(const char *fmt, ...);
 void ngd_str_print(ngd_str_t s);
 int ngd_str_snprintf(
     u_char *buf,
@@ -27,5 +25,8 @@ int ngd_str_snprintf(
     size_t *bytes_written,
     const char *fmt, ...
 );
+bool ngd_str_isin(ngd_str_t s1, ngd_str_t s2);
+bool ngd_str_iequal(ngd_str_t s1, ngd_str_t s2);
+bool ngd_str_equal(ngd_str_t s1, ngd_str_t s2);
 //
 #endif

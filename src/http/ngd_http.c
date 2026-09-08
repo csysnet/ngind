@@ -71,7 +71,8 @@ ngd_http_close_conn(ngd_conn_t *c)
     http = ngd_conn_get_data(c);
     //
     ngd_pool_destroy(http->pool);
-    ngd_pool_destroy(http->pool_req);
+    if (http->pool_req != NULL)
+        ngd_pool_destroy(http->pool_req);
     ngd_conn_close(c);
 }
 void
@@ -96,6 +97,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
     //
     if (ngd_conn_on_timeout(c))
         goto error;
+
     //
     for (;;)
     {
@@ -120,6 +122,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
                         goto error;
                     if (ret == NGD_AGAIN)
                         goto again;
+                    if (ngd_conn_reset_timeout(c, NGD_HTTP_TIMEOUT_READ) == NGD_ERR)
+                        goto error;
                     b->last += n;
                     break;
                 }
@@ -131,8 +135,11 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 http->sver.data = http->ver_start;
                 http->sver.len = http->ver_end - http->ver_start;
                 //
-                if (!ngd_str_equal(http->suri, NGD_STR_C("GET")))
+                if (!ngd_str_equal(http->smethod, NGD_STR_C("GET")))
                     goto error;
+                //
+                // ngd_str_print(http->suri);
+                // ngd_str_print(NGD_STR_C("\n"));
                 //
                 state = ps_headers;
                 break;
@@ -148,6 +155,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
                         goto error;
                     if (ret == NGD_AGAIN)
                         goto again;
+                    if (ngd_conn_reset_timeout(c, NGD_HTTP_TIMEOUT_READ) == NGD_ERR)
+                        goto error;
                     b->last += n;
                     break;
                 }
@@ -157,6 +166,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                                           node != NULL;
                                           node = node->next)
                     {
+
                         header = node->data;
                         if (ngd_str_iequal(header->key, NGD_STR_C("Content-Length"))) {
                             http->on_content_length = true;
@@ -180,7 +190,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
                             goto error;
                         }
                     }
-
                     if (http->on_chunk || http->on_content_length)
                         goto error;
                     state = ps_build_resp;
@@ -194,12 +203,16 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 header->value.data = http->value_start;
                 header->value.len = http->value_end - http->value_start;
                 ngd_list_append(&http->headers, (void *)header);
+                // ngd_str_print(header->key);
+                // ngd_str_print(NGD_STR_C(": "));
+                // ngd_str_print(header->value);
+                // ngd_str_print(NGD_STR_C("\n"));
                 break;
             case ps_build_resp:
+                // ngd_str_log("build resp");
                 if (ngd_http_build_resp(http) == NGD_ERR)
                     goto error;
-                ret = ngd_http_build_resp(http);
-                if (ret == NGD_ERR)
+                if (ngd_conn_enable_write(c) == NGD_ERR)
                     goto error;
                 state = ps_send_resp;
                 break;
@@ -215,17 +228,24 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 if (ret == NGD_HTTP_FULL_SEND_DONE) {
                     ngd_file_close(&http->file_send);
                     if (!http->on_keep_alive) {
+                        ngd_conn_disable_write(c);
                         goto done;
                     }
                     //
+                    ngd_conn_disable_write(c);
                     ngd_pool_destroy(http->pool_req);
                     http->pool_req = ngd_pool_create();
                     if (http->pool_req == NULL)
                         goto error;
                     //
                     n = b->last - b->pos;
+                    if (n == 0) {
+                        if (ngd_conn_reset_timeout(c, NGD_HTTP_TIMEOUT_KEEP_ALIVE) == NGD_ERR)
+                            goto error;
+                    }
                     ngd_str_cpy(b->start, b->pos, n);
-                    b->last += n;
+                    b->pos = b->start;
+                    b->last = b->start + n;
                     //
                     state = ps_start;
                 }
@@ -298,6 +318,7 @@ ngd_http_build_resp(ngd_http_t *http)
     const char *vtype;
     char *file_path;
     size_t len;
+    size_t static_len;
     size_t bytes_written;
     //
     b = &http->outbuf;
@@ -313,19 +334,24 @@ ngd_http_build_resp(ngd_http_t *http)
         vtype = "text/css";
     else if (ngd_str_isin(NGD_STR_C(".js"), http->suri))
         vtype = "text/javascript";
+    else if (ngd_str_isin(NGD_STR_C(".ico"), http->suri))
+        vtype = "image/vnd.microsoft.icon";
     else
         return NGD_ERR;
     //
-    file_path = ngd_pool_alloc(http->pool_req, (sizeof(NGD_STATIC_PATH) - 1) + (http->suri.len) + 1);
-    ngd_str_cpy(file_path, NGD_STATIC_PATH, (sizeof(NGD_STATIC_PATH) - 1) );
-    ngd_str_cpy(file_path, http->suri.data, http->suri.len);
-    file_path[(sizeof(NGD_STATIC_PATH) - 1) + (http->suri.len)] = '\0';
+    static_len = (sizeof(NGD_STATIC_PATH) - 1);
+    file_path = ngd_pool_alloc(http->pool_req, static_len + (http->suri.len) + 1);
+    ngd_str_cpy(file_path, NGD_STATIC_PATH, static_len);
+    ngd_str_cpy(file_path + static_len, http->suri.data, http->suri.len);
+    file_path[static_len + http->suri.len] = '\0';
     //
     ngd_file_init(&http->file_send);
     if (ngd_file_open(&http->file_send, file_path) == NGD_ERR)
         return NGD_ERR;
-    if (ngd_file_get_size(&http->file_send, &len) == NGD_ERR)
+    if (ngd_file_get_size(&http->file_send, &len) == NGD_ERR) {
+        ngd_file_close(&http->file_send);
         return NGD_ERR;
+    }
     //
     if (ngd_str_snprintf(
             b->last,
@@ -345,7 +371,6 @@ ngd_http_build_resp(ngd_http_t *http)
     }
 
     b->last += bytes_written;
-
     return NGD_OK;
 }
 //
@@ -422,8 +447,6 @@ ngd_http_parse_headers(ngd_http_t *http)
     } state;
     ngd_buf_t *b;
     u_char *p;
-    int ret;
-    ssize_t n;
     //
     state = http->state_req;
     b = &http->inbuf;

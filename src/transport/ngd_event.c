@@ -88,10 +88,10 @@ ngd_event_unregis(ngd_event_t *ev)
 int
 ngd_event_enable_write(ngd_event_t *ev)
 {
-    return ngd_event_set(ev, EPOLL_CTL_ADD, EPOLLIN | EPOLLOUT);
+    return ngd_event_set(ev, EPOLL_CTL_MOD, EPOLLIN | EPOLLOUT);
 }
 int
 ngd_event_disable_write(ngd_event_t *ev)
 {
-    return ngd_event_set(ev, EPOLL_CTL_ADD, EPOLLIN);
+    return ngd_event_set(ev, EPOLL_CTL_MOD, EPOLLIN);
 }

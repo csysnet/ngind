@@ -1,7 +1,7 @@
 #ifndef NGD_FILE_H
 #define NGD_FILE_H
 //
-#include "ngd_file.h"
+#include "ngd_core.h"
 //
 typedef struct ngd_file_t ngd_file_t;
 //

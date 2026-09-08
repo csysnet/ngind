@@ -3,6 +3,7 @@
 void
 ngd_list_init(ngd_list_t *l, ngd_pool_t *pool)
 {
+    l->head = NULL;
     l->pool = pool;
 }
 int
