@@ -51,7 +51,7 @@ ngd_event_module_loop(int timeout)
     uint32_t evflags;
     //
     for (;;) {
-        n = epoll_wait(epfd, events, sizeof(events), timeout);
+        n = epoll_wait(epfd, events, NGD_EVENT_MAX_GET, timeout);
         if (n == -1) {
             if (errno == EINTR)
                 continue;
