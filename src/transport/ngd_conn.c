@@ -36,23 +36,20 @@ ngd_conn_release(ngd_conn_t *c)
 static void
 ngd_conn_handle_event(ngd_event_t *ev)
 {
-    uint8_t retflags;
     ngd_conn_t *c;
     //
     c = NGD_EVENT_GET_DATA(ev);
     //
-    if (NGD_EVENT_IS(ev, NGD_EVENT_READ)) {
+    c->on_read = false;
+    c->on_write = false;
+    c->on_timeout = false;
+    //
+    if (NGD_EVENT_IS(ev, NGD_EVENT_READ))
         c->on_read = true;
-        c->handler(c);
-        if (c != NULL)
-        	c->on_read = false;
-    }
-    if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) {
+    if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE))
         c->on_write = true;
-        c->handler(c);
-        if (c != NULL)
-        	c->on_write = false;
-    }
+    //
+    c->handler(c);
 }
 //
 static void
@@ -62,10 +59,12 @@ ngd_conn_handle_timeout(ngd_timer_t *tmr)
     //
     c = NGD_TIMER_GET_DATA(tmr);
     //
+    c->on_read = false;
+    c->on_write = false;
+    //
     c->on_timeout = true;
     c->handler(c);
-    if (c != NULL)
-    	c->on_timeout = false;
+
 }
 //
 void ngd_conn_module_init(int port, int backlog, bool on_tls, void (*init_conn)(ngd_conn_t *))
@@ -103,8 +102,9 @@ ngd_conn_init(ngd_conn_t *c,
     //
     if (ngd_event_regis(&c->event, c->fd, ngd_conn_handle_event, c) == NGD_ERR)
         return NGD_ERR;
-    if (ngd_timer_regis(&c->timer, ngd_conn_handle_timeout, c, timeout_ms) == NGD_ERR)
+    if (ngd_timer_regis(&c->timer, ngd_conn_handle_timeout, c, timeout_ms) == NGD_ERR) {
         return NGD_ERR;
+    }
     //
     return NGD_OK;
 }
@@ -264,9 +264,11 @@ listener_handle_event(ngd_event_t *ev)
     ngd_conn_t *c;
     //
     c = listener_accept();
-    if (c != NULL)
-    listener.init_conn(c);
+    if (c == NULL)
+        return;
+    //
     ngd_str_log("accepted connection fd: %d", c->fd);
+    listener.init_conn(c);
 }
 //
 static void
@@ -274,15 +276,11 @@ listener_init(int port, int backlog, void (*init_conn)(ngd_conn_t *))
 {
     struct sockaddr_in addr;
     int opt;
-    int flag;
     //
     listener.fd = socket(AF_INET, SOCK_STREAM, 0);
     //
     opt = 1;
     setsockopt(listener.fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    //
-    flag = fcntl(listener.fd, F_GETFL, 0);
-    fcntl(listener.fd, F_SETFL, flag | O_NONBLOCK);
     //
     ngd_str_zeros((u_char *)&addr, sizeof(addr));
     addr.sin_family = AF_INET;
