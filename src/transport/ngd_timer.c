@@ -16,6 +16,7 @@ ngd_timer_module_init(void)
 uint64_t
 ngd_timer_module_get_now(void)
 {
+    //ms
     struct timespec ts;
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -34,7 +35,7 @@ ngd_timer_regis(ngd_timer_t *tmr,
     ngd_timer_t *cur;
 
     if (tmr == NULL || handler == NULL) {
-        return -1;
+        return NGD_ERR;
     }
 
     tmr->expire = ngd_timer_module_get_now() + timeout_ms;
@@ -44,28 +45,20 @@ ngd_timer_regis(ngd_timer_t *tmr,
     tmr->prev = NULL;
     tmr->next = NULL;
 
-    /*
-     * Empty list.
-     */
+    //
     if (head == NULL) {
         head = tmr;
-        return 0;
+        return NGD_OK;
     }
-
-    /*
-     * Insert before head.
-     */
+    //insert bef head
     if (tmr->expire < head->expire) {
         tmr->next = head;
         head->prev = tmr;
         head = tmr;
 
-        return 0;
+        return NGD_OK;
     }
 
-    /*
-     * Find position.
-     */
     cur = head;
 
     while (cur->next != NULL &&
@@ -83,7 +76,7 @@ ngd_timer_regis(ngd_timer_t *tmr,
 
     cur->next = tmr;
 
-    return 0;
+    return NGD_OK;
 }
 
 
@@ -91,12 +84,8 @@ int
 ngd_timer_unregis(ngd_timer_t *tmr)
 {
     if (tmr == NULL) {
-        return -1;
+        return NGD_ERR;
     }
-
-    /*
-     * Timer is head.
-     */
     if (tmr == head) {
         head = tmr->next;
 
@@ -107,32 +96,22 @@ ngd_timer_unregis(ngd_timer_t *tmr)
         tmr->prev = NULL;
         tmr->next = NULL;
 
-        return 0;
+        return NGD_OK;
     }
-
-    /*
-     * Not linked.
-     *
-     * Note: this also treats a timer with
-     * prev == NULL && next == NULL as unregistered.
-     */
     if (tmr->prev == NULL && tmr->next == NULL) {
-        return 0;
+        return NGD_OK;
     }
-
-    /*
-     * Remove from middle/tail.
-     */
+    //
     tmr->prev->next = tmr->next;
 
     if (tmr->next != NULL) {
         tmr->next->prev = tmr->prev;
     }
-
+    //
     tmr->prev = NULL;
     tmr->next = NULL;
-
-    return 0;
+    //
+    return NGD_OK;
 }
 
 
@@ -141,16 +120,16 @@ ngd_timer_reset(ngd_timer_t *tmr, uint64_t timeout_ms)
 {
     void (*handler)(ngd_timer_t *);
     void *data;
-
+    //
     if (tmr == NULL) {
-        return -1;
+        return NGD_ERR;
     }
-
+    //
     handler = tmr->handler;
     data = tmr->data;
-
+    //
     ngd_timer_unregis(tmr);
-
+    //
     return ngd_timer_regis(tmr,
                            handler,
                            data,

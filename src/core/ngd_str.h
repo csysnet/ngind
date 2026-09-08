@@ -5,8 +5,6 @@
 //
 #define NGD_STR_C(s) \
     (ngd_str_t){ .data = s, .len = sizeof(s) - 1 }
-#define NGD_STR(data, len) \
-    (ngd_str_t){ .data = (data), .len = (len) }
 //
 typedef struct ngd_str_t ngd_str_t;
 //
