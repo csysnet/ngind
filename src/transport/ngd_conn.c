@@ -120,7 +120,8 @@ ngd_conn_close(ngd_conn_t *c)
     ngd_event_unregis(&c->event);
     close(fd);
     ngd_conn_release(c);
-    ngd_str_log("closed connection fd: %d", fd);
+    // ngd_str_log("closed connection fd: %d", fd);
+    ngd_str_log("closing connection: %p fd: %d", (void *)c, fd);
 }
 //
 int
@@ -267,7 +268,9 @@ listener_handle_event(ngd_event_t *ev)
     if (c == NULL)
         return;
     //
-    ngd_str_log("accepted connection fd: %d", c->fd);
+    // ngd_str_log("accepted connection fd: %d", c->fd);
+    ngd_str_log("accepted connection: %p fd: %d",
+                (void *)c, c->fd);
     listener.init_conn(c);
 }
 //

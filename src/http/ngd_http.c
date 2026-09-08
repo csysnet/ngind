@@ -31,8 +31,8 @@ ngd_http_init_conn(ngd_conn_t *c)
     //
     buf = ngd_pool_alloc(pool, NGD_HTTP_BUFLEN);
     if (buf == NULL) {
-        ngd_pool_destroy(http->pool);
         ngd_pool_destroy(http->pool_req);
+        ngd_pool_destroy(http->pool);
         ngd_conn_close(c);
         return;
     }
@@ -40,8 +40,8 @@ ngd_http_init_conn(ngd_conn_t *c)
     //
     buf = ngd_pool_alloc(pool, NGD_HTTP_BUFLEN);
     if (buf == NULL) {
-        ngd_pool_destroy(http->pool);
         ngd_pool_destroy(http->pool_req);
+        ngd_pool_destroy(http->pool);
         ngd_conn_close(c);
         return;
     }
@@ -54,8 +54,8 @@ ngd_http_init_conn(ngd_conn_t *c)
             NGD_HTTP_TIMEOUT_READ
         ) == NGD_ERR)
     {
-        ngd_pool_destroy(http->pool);
         ngd_pool_destroy(http->pool_req);
+        ngd_pool_destroy(http->pool);
         ngd_conn_close(c);
         return;
     }
@@ -70,9 +70,9 @@ ngd_http_close_conn(ngd_conn_t *c)
     //
     http = ngd_conn_get_data(c);
     //
-    ngd_pool_destroy(http->pool);
     if (http->pool_req != NULL)
         ngd_pool_destroy(http->pool_req);
+    ngd_pool_destroy(http->pool);
     ngd_conn_close(c);
 }
 void
@@ -106,6 +106,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 ngd_list_init(&http->headers, http->pool_req);
                 http->on_content_length = false;
                 http->on_chunk = false;
+                http->on_keep_alive = true;
                 state = ps_reqline;
                 break;
             case ps_reqline:
@@ -180,7 +181,6 @@ ngd_http_handle_conn(ngd_conn_t *c)
                         }
                         if (ngd_str_iequal(header->key ,NGD_STR_C("Connection"))) {
                             if (ngd_str_iequal(header->value, NGD_STR_C("keep-alive"))) {
-                                http->on_keep_alive = true;
                                 continue;
                             }
                             if (ngd_str_iequal(header->value, NGD_STR_C("close"))) {
@@ -341,6 +341,8 @@ ngd_http_build_resp(ngd_http_t *http)
     //
     static_len = (sizeof(NGD_STATIC_PATH) - 1);
     file_path = ngd_pool_alloc(http->pool_req, static_len + (http->suri.len) + 1);
+    if (file_path == NULL)
+        return NGD_ERR;
     ngd_str_cpy(file_path, NGD_STATIC_PATH, static_len);
     ngd_str_cpy(file_path + static_len, http->suri.data, http->suri.len);
     file_path[static_len + http->suri.len] = '\0';

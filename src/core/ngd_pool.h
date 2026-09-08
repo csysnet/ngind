@@ -4,7 +4,6 @@
 #include "ngd_core.h"
 //
 #define NGD_POOL_BLOCKSIZE 1024
-#define NGD_POOL_FAIL 4
 //
 typedef struct ngd_pool_t ngd_pool_t;
 //
