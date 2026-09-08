@@ -24,7 +24,7 @@ struct ngd_conn_t {
 static ngd_conn_t *
 ngd_conn_get()
 {
-    return malloc(sizeof(ngd_conn_t));
+    return calloc(1, sizeof(ngd_conn_t));
 }
 //
 static void
@@ -44,12 +44,14 @@ ngd_conn_handle_event(ngd_event_t *ev)
     if (NGD_EVENT_IS(ev, NGD_EVENT_READ)) {
         c->on_read = true;
         c->handler(c);
-        c->on_read = false;
+        if (c != NULL)
+        	c->on_read = read;
     }
     if (NGD_EVENT_IS(ev, NGD_EVENT_WRITE)) {
         c->on_write = true;
         c->handler(c);
-        c->on_write = false;
+        if (c != NULL)
+        	c->on_write = false;
     }
 }
 //
@@ -62,7 +64,8 @@ ngd_conn_handle_timeout(ngd_timer_t *tmr)
     //
     c->on_timeout = true;
     c->handler(c);
-    c->on_timeout = false;
+    if (c != NULL)
+    	c->on_timeout = false;
 }
 //
 void ngd_conn_module_init(int port, int backlog, bool on_tls, void (*init_conn)(ngd_conn_t *))
