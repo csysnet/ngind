@@ -1,7 +1,10 @@
 # ngind
 features:
-
 - static file server
+
+tech:
+- epoll
+- C 
 
 compile: 
 - cd ./src
