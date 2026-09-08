@@ -24,7 +24,7 @@ struct ngd_conn_t {
 static ngd_conn_t *
 ngd_conn_get()
 {
-    return calloc(1, sizeof(ngd_conn_t));
+    return malloc(sizeof(ngd_conn_t));
 }
 //
 static void

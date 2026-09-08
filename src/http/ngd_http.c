@@ -217,7 +217,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 state = ps_send_resp;
                 break;
             case ps_send_resp:
-                if (ngd_conn_on_read(http->conn))
+                if (ngd_conn_on_read(http->conn) && !ngd_conn_on_write(http->conn))
                     goto again;
                 //
                 ret = ngd_http_send_resp(http);
