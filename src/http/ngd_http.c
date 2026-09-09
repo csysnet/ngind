@@ -249,6 +249,8 @@ ngd_http_handle_conn(ngd_conn_t *c)
                     //
                     state = ps_start;
                 }
+                if (ngd_conn_reset_timeout(c, NGD_HTTP_TIMEOUT_WRITE) == NGD_ERR)
+                    goto error;
                 break;
         }
     }
@@ -327,6 +329,9 @@ ngd_http_build_resp(ngd_http_t *http)
         vconn = "keep-alive";
     else
         vconn = "close";
+    //
+    if (ngd_str_isin(NGD_STR_C("/"), http->suri))
+        http->suri = NGD_STR_C("/index.html");
     //
     if (ngd_str_isin(NGD_STR_C(".html"), http->suri))
         vtype = "text/html";
