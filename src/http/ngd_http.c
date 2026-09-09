@@ -226,7 +226,7 @@ ngd_http_handle_conn(ngd_conn_t *c)
                 if (ret == NGD_AGAIN)
                     goto again;
                 if (ret == NGD_HTTP_FULL_SEND_DONE) {
-                    ngd_str_print(NGD_STR_C("Success: \n");
+                    ngd_str_log("Success");
                     ngd_str_print(http->smethod);
                     ngd_str_print(NGD_STR_C(" "));
                     ngd_str_print(http->suri);
