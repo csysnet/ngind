@@ -330,7 +330,7 @@ ngd_http_build_resp(ngd_http_t *http)
     else
         vconn = "close";
     //
-    if (ngd_str_isin(NGD_STR_C("/"), http->suri))
+    if (ngd_str_equal(NGD_STR_C("/"), http->suri))
         http->suri = NGD_STR_C("/index.html");
     //
     if (ngd_str_isin(NGD_STR_C(".html"), http->suri))
