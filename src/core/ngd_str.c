@@ -75,7 +75,7 @@ ngd_str_endwith(ngd_str_t ends, ngd_str_t s)
     if (ends.len == 0 || s.len == 0 || ends.len > s.len)
         return false;
     //
-    return memcmp(s.data + (s.len - ends.len), s.data, ends.len) == 0;
+    return memcmp(s.data + (s.len - ends.len), ends.data, ends.len) == 0;
 }
 //
 bool
