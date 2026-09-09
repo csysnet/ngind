@@ -337,7 +337,7 @@ ngd_http_build_resp(ngd_http_t *http)
     else if (ngd_str_isin(NGD_STR_C(".ico"), http->suri))
         vtype = "image/vnd.microsoft.icon";
     else
-        return NGD_ERR;
+        vtype = "application/octet-stream";
     //
     static_len = (sizeof(NGD_STATIC_PATH) - 1);
     file_path = ngd_pool_alloc(http->pool_req, static_len + (http->suri.len) + 1);
