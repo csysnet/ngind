@@ -332,14 +332,20 @@ ngd_http_build_resp(ngd_http_t *http)
     //
     if (ngd_str_equal(NGD_STR_C("/"), http->suri))
         http->suri = NGD_STR_C("/index.html");
+    else {
+        if (ngd_str_endwith(NGD_STR_C("/"), http->suri)) {
+            ngd_str_log("NOT A FILE ERROR");
+            return NGD_ERR;
+        }
+    }
     //
-    if (ngd_str_isin(NGD_STR_C(".html"), http->suri))
+    if (ngd_str_endwith(NGD_STR_C(".html"), http->suri))
         vtype = "text/html";
-    else if (ngd_str_isin(NGD_STR_C(".css"), http->suri))
+    else if (ngd_str_endwith(NGD_STR_C(".css"), http->suri))
         vtype = "text/css";
-    else if (ngd_str_isin(NGD_STR_C(".js"), http->suri))
+    else if (ngd_str_endwith(NGD_STR_C(".js"), http->suri))
         vtype = "text/javascript";
-    else if (ngd_str_isin(NGD_STR_C(".ico"), http->suri))
+    else if (ngd_str_endwith(NGD_STR_C(".ico"), http->suri))
         vtype = "image/vnd.microsoft.icon";
     else
         vtype = "application/octet-stream";
@@ -353,9 +359,12 @@ ngd_http_build_resp(ngd_http_t *http)
     file_path[static_len + http->suri.len] = '\0';
     //
     ngd_file_init(&http->file_send);
-    if (ngd_file_open(&http->file_send, file_path) == NGD_ERR)
+    if (ngd_file_open(&http->file_send, file_path) == NGD_ERR) {
+        ngd_str_log("OPEN FILE ERROR");
         return NGD_ERR;
+    }
     if (ngd_file_get_size(&http->file_send, &len) == NGD_ERR) {
+        ngd_str_log("GET FILE SIZE ERROR");
         ngd_file_close(&http->file_send);
         return NGD_ERR;
     }

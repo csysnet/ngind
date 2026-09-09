@@ -68,7 +68,16 @@ ngd_str_snprintf(u_char *buf, size_t size, size_t *bytes_written,
 
     return NGD_OK;
 }
-
+//
+bool
+ngd_str_endwith(ngd_str_t ends, ngd_str_t s)
+{
+    if (ends.len == 0 || s.len == 0 || ends.len > s.len)
+        return false;
+    //
+    return memcmp(s.data + (s.len - ends.len), s.data, ends.len) == 0;
+}
+//
 bool
 ngd_str_isin(ngd_str_t s1, ngd_str_t s2)
 {

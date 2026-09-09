@@ -23,6 +23,7 @@ int ngd_str_snprintf(
     size_t *bytes_written,
     const char *fmt, ...
 );
+bool ngd_str_endwith(ngd_str_t ends, ngd_str_t s);
 bool ngd_str_isin(ngd_str_t s1, ngd_str_t s2);
 bool ngd_str_iequal(ngd_str_t s1, ngd_str_t s2);
 bool ngd_str_equal(ngd_str_t s1, ngd_str_t s2);
